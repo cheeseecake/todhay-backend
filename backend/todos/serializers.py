@@ -28,11 +28,11 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Projects
         fields = ('id','type', 'title', 'description', 'startdate', 'duedate', 'completedate', 'total_rewards', 'total_todos', 'total_effort')
     def get_total_rewards(self, obj):
-        return list(Todos.objects.values_list().filter(project=obj).aggregate(Sum('reward')).values())[0]
+        return list(Todos.objects.values_list().filter(project=obj,completedate__isnull=False).aggregate(Sum('reward')).values())[0]
     def get_total_todos(self, obj):
         return list(Todos.objects.values_list().filter(project=obj).aggregate(Count('title')).values())[0]
     def get_total_effort(self, obj):
-        return list(Todos.objects.values_list().filter(project=obj).aggregate(Sum('effort')).values())[0]
+        return list(Todos.objects.values_list().filter(project=obj,completedate__isnull=False).aggregate(Sum('effort')).values())[0]
 
 class TodoSerializer(serializers.ModelSerializer):
     projecthabit_name = serializers.SerializerMethodField()
