@@ -7,13 +7,16 @@ from django.db.models import Count, Sum
 class HabitSerializer(serializers.ModelSerializer):
     total_rewards = serializers.SerializerMethodField()
     total_effort = serializers.SerializerMethodField()
+    total_todos = serializers.SerializerMethodField()
     class Meta:
         model = Habits
         fields = "__all__"
     def get_total_rewards(self, obj):
-        return (obj.count * obj.reward)
+        return list(Todos.objects.values_list().filter(habit=obj,completedate__isnull=False).aggregate(Sum('reward')).values())[0]
+    def get_total_todos(self, obj):
+        return list(Todos.objects.values_list().filter(habit=obj,completedate__isnull=False).aggregate(Count('title')).values())[0]
     def get_total_effort(self, obj):
-        return (obj.count * obj.effort)
+        return list(Todos.objects.values_list().filter(habit=obj,completedate__isnull=False).aggregate(Sum('effort')).values())[0]
 
 class WishlistSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,7 +33,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_total_rewards(self, obj):
         return list(Todos.objects.values_list().filter(project=obj,completedate__isnull=False).aggregate(Sum('reward')).values())[0]
     def get_total_todos(self, obj):
-        return list(Todos.objects.values_list().filter(project=obj).aggregate(Count('title')).values())[0]
+        return list(Todos.objects.values_list().filter(project=obj,completedate__isnull=False).aggregate(Count('title')).values())[0]
     def get_total_effort(self, obj):
         return list(Todos.objects.values_list().filter(project=obj,completedate__isnull=False).aggregate(Sum('effort')).values())[0]
 
