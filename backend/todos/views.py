@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.shortcuts import render, redirect
 
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 from .models import Projects, Todos, Habits, Wishlist
-from django.db.models import Count, Min
 
 from rest_framework import viewsets
-from rest_framework.decorators import action
 from .serializers import TodoSerializer, ProjectSerializer, HabitSerializer, WishlistSerializer 
         
 def refreshTodos():
@@ -32,20 +29,24 @@ def refreshTodos():
                     count = count + 1
                     prevduedate = completed.duedate 
             frequency = habit.frequency
-            startdate = prevstartdate  + relativedelta(days = 1)
         if exist == 0: #if it does not exist, create new Todo with new duedate
             print(exist)
             print('created new todo')
             if frequency == 'Daily':
                 duedate = prevduedate + relativedelta(days = 1)
+                startdate = prevstartdate  + relativedelta(days = 1)
             elif frequency == 'Weekly':
-                duedate = prevduedate + relativedelta(weeks =1)
+                duedate = prevduedate + relativedelta(weeks = 1)
+                startdate = prevstartdate  + relativedelta(weeks = 1)
             elif frequency == 'Monthly':
-                duedate = prevduedate+ relativedelta(months =1)
+                duedate = prevduedate+ relativedelta(months = 1)
+                startdate = prevstartdate  + relativedelta(months = 1)
             elif frequency == 'Quarterly':
-                duedate = prevduedate + relativedelta(months=3)
+                duedate = prevduedate + relativedelta(months = 3)
+                startdate = prevstartdate  + relativedelta(months = 3)
             elif frequency == 'Yearly':
-                duedate = prevduedate + relativedelta(years =1)
+                duedate = prevduedate + relativedelta(years = 1)
+                startdate = prevstartdate  + relativedelta(years = 1)
             todo = Todos(
                     title=habit.title,
                     description = habit.description,
