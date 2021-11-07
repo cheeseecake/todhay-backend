@@ -43,7 +43,7 @@ export default class CustomCard extends Component {
                     <Card key={item.id} style={{backgroundColor: item.category === "Learning" ? '#FFEAEE' : item.category === "Financial" ? "#E8F7EA":'#DDF0FF'}}>
                     <CardBody >   
                     <CardSubtitle tag="h6" className="mb-2 text-muted">{item.category}</CardSubtitle>
-                    <CardTitle tag="h5" onClick={() => onEdit(item, activeItemType)}>{item.title} x{item.count}</CardTitle>
+                    <CardTitle tag="h5" onClick={() => onEdit(item, activeItemType)}>{item.title} x{item.total_todos}</CardTitle>
                     <CardText>
                     <FcMoneyTransfer/> Earned ${item.total_rewards} <br></br>
                     <FcClock/> Invested {item.total_effort} hrs

@@ -56,7 +56,6 @@ def refreshTodos():
                     startdate = startdate.strftime("%Y-%m-%d"),
                     duedate=duedate.strftime("%Y-%m-%d"))
             todo.save()
-            habit.count = count      
             habit.save()
 
 # Create your views here.

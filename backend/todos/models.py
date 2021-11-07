@@ -48,8 +48,7 @@ class Habits(baseTodos):
                                 ('Yearly', 'Yearly')),
                                 default ='Daily'
                                 )
-    enddate = models.DateField(blank=True, null=True) 
-    count = models.IntegerField(default = 0)                     
+    enddate = models.DateField(blank=True, null=True)                 
     def __str__(self):
         return self.title
                                  
