@@ -28,6 +28,7 @@ def refreshTodos():
                 if habit == completed.habit:
                     count = count + 1
                     prevduedate = completed.duedate 
+                    prevstartdate = completed.startdate
             frequency = habit.frequency
         if exist == 0: #if it does not exist, create new Todo with new duedate
             print(exist)
@@ -74,6 +75,7 @@ class TodoView(viewsets.ModelViewSet):
         serializer.save()
     def perform_update(self, serializer):
         serializer.save()
+        print(serializer)
         refreshTodos()
 
 class HabitView(viewsets.ModelViewSet):
