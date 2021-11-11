@@ -95,7 +95,3 @@ class WishlistView(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save()
 
-
-
-
-
