@@ -11,4 +11,3 @@ logs
 *.log
 backend/todos/migrations/*
 backend/db.sqlite3
-backend/backend/settings.py
