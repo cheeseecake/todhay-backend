@@ -2,10 +2,8 @@ services:
   backend:
     build: ./backend
     restart: unless-stopped
-    ports:
-      - "8000:8000"
     volumes:
-      - ./backend/db.sqlite3:/db.sqlite3
+      - ./backend:/backend
   frontend:
     restart: unless-stopped
     build: ./frontend
@@ -13,3 +11,8 @@ services:
       - "10000:3000"
     depends_on:
       - backend
+    volumes:
+      - ./frontend:/frontend
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
