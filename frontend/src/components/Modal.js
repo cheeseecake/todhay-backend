@@ -10,7 +10,6 @@ import {
   Form,
   FormGroup,
   Input,
-
   Label,
 } from "reactstrap";
 
@@ -19,60 +18,23 @@ export default class CustomModal extends Component {
     super(props);
     this.state = {
       data : this.props.data,
-      dailyTodos: [],
-      selectedTodos: [],
       activeItem: this.props.activeItem,
       activeItemType: this.props.activeItemType,
     };
   };
-  componentDidMount() {
-    const { data} = this.props;
-    if (this.state.activeItem.title === 'Journal'){
-      const activeItem = { ...this.state.activeItem, 'otherItems': [] };
-      const dailyTodos = data.filter((todo) => todo.frequency ===  'Daily' && todo.title !== 'Journal'
-      && todo.duedate === activeItem['duedate'] && todo.completedate === null)
-      this.setState({ dailyTodos, activeItem }); 
-    }
-  }
-
   handleChange = (e) => {
     let { name, value } = e.target;
     const activeItem = { ...this.state.activeItem, [name]: value };
     this.setState({ activeItem });
     console.log(activeItem)
   };
-  handleCheck = (e) => {
-    const { dailyTodos } = this.state;
-    let { checked, value } = e.target;
-    let selectedTodos = this.state.selectedTodos;
-    let todo;
-    let otherItems =[];
-    if (checked===true && !selectedTodos.includes(value)){
-        selectedTodos.push(value)
-      }
-    else {
-      if (selectedTodos.includes(value)){
-        const index = selectedTodos.indexOf(value);
-        if (index > -1) {
-          selectedTodos.splice(index, 1);
-        }
-      }
-    }
-    console.log(selectedTodos)
-    for (const i in selectedTodos){
-      todo = dailyTodos.filter((todo) => todo.title ===  selectedTodos[i])[0]
-      otherItems.push(todo)
-    }
-    const activeItem = { ...this.state.activeItem, 'otherItems': otherItems };
-    this.setState({ activeItem , selectedTodos});
-    };
   render() {
-    const { toggle, onSave, onDelete, onJournal } = this.props;
+    const { toggle, onSave, onDelete } = this.props;
     const { activeItemType, activeItem} = this.props;
-    const {dailyTodos} = this.state;
+    console.log(activeItem)
     return (
       <Modal isOpen={true} toggle={toggle} className="modal-lg">
-        <ModalHeader toggle={toggle}>/{activeItemType}</ModalHeader>
+        <ModalHeader toggle={toggle}>/{activeItem.project}/{activeItemType}/</ModalHeader>
         <ModalBody>
           <Form>
           <FormGroup>
@@ -194,26 +156,11 @@ export default class CustomModal extends Component {
               onChange={this.handleChange}/>
             </FormGroup></Col>
             </Row>}
-            {activeItem.title==="Journal" &&
-            <Row>
-            {dailyTodos.map((todo) => {
-              return (
-              <Col key = {todo.id} md={6}>
-              <FormGroup check>
-              <Label for="otherItems" check>
-              <Input type="checkbox" id={todo.title} name={todo.title} value={todo.title}
-              onChange={this.handleCheck}/>{todo.title}</Label>
-              </FormGroup></Col>);
-              })}
-              </Row>
-            }
           </Form>
         </ModalBody>
         <ModalFooter>
         <Button onClick={() => onDelete(this.state.activeItem)}>Delete</Button> &nbsp;
         <Button color="primary" onClick={() => onSave(this.state.activeItem,'update')}>Save</Button> &nbsp;
-        {activeItem.title==="Journal" &&
-        <Button color="success" onClick={() => onJournal(this.state.activeItem)}>Complete</Button>}
         </ModalFooter>
       </Modal>
     );

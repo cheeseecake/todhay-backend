@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import Modal from "./components/Modal";
 import Table from "./components/Table";
 import Cards from "./components/Cards";
+import { FaPiggyBank } from "react-icons/fa";
 import {
   Navbar,
   Nav,
@@ -73,28 +74,21 @@ class App extends Component {
     this.setState({ modal: !this.state.modal });
   };
 
-  createItem = (item, type) => {
-    if (!type) {
-      type = this.state.activeItemType;
-    }
-    if (item.id) {
-      const newItem = { project: item.id, title: ""};
-      this.setState({ activeItem: newItem, modal: !this.state.modal, activeItemType: type});
-      return
-    }
-    const newItem = { title: "" };
-    this.setState({ activeItem: newItem, modal: !this.state.modal, activeItemType: type});
+  createItem = (item, type, view) => {
+    let modalState = true;
+    let newItem = { title: "" };
+    if (!type) {type = this.state.activeItemType;}
+    if (item.id) { newItem = { project: item.id, title: ""};}
+    if (view) {
+      modalState = false;
+      newItem = { view: view, title: item.title };
+    }  
+    this.setState({ activeItem: newItem, modal: modalState, activeItemType: type});
   };
 
   editItem = (item, type) => {
-    const { todoList} = this.state;
-    if(type === "journal") {
-      item = todoList.filter((todo) => todo.title ===  "Journal" && todo.completedate === null)[0];
-      type = 'todos';
-    }
     this.setState({ activeItem: item, modal: !this.state.modal, activeItemType: type});
   };
-
 
 handleSubmit = async (item, action) => {
   this.setState({ modal: false});
@@ -118,20 +112,6 @@ handleSubmit = async (item, action) => {
     .then((res) => this.refreshList());
 };
 
-handleJournal = (item) => {
-  this.setState({ modal: false});
-  console.log(item)
-  let activeItem, otherItems;
-  
-  otherItems = item['otherItems']
-  console.log(otherItems)
-  delete item['otherItems']
-  activeItem = { ...item};
-  this.handleSubmit(activeItem, 'complete')
-  for (const i in otherItems) {
-    this.handleSubmit(otherItems[i], 'complete')
-  }
-}
 handleDelete = (item) => {
   this.setState({ modal: false});
   axios
@@ -154,18 +134,16 @@ handleDelete = (item) => {
           </NavbarText>
         </Navbar>
         <Navbar style={{backgroundColor: '#2D3047'}}  expand="md"  bg="dark" variant="light">
-        {this.state.activeItemType ==="todos" ? (
-        <Button color="info" onClick={() => this.editItem({}, 'journal')}>New journal</Button>
-        ) : <Button color="info" onClick={() => this.createItem({}, '')}>Add {this.state.activeItemType}</Button>}
-        &nbsp;&nbsp;&nbsp;<NavbarText style={{color: 'white'}} className="mr-auto d-flex justify-content-center">
-          Available: ${this.state.availRewards}
+        <NavbarText style={{color: 'white'}} className="mr-auto d-flex justify-content-center">
+        <FaPiggyBank/> Available: ${this.state.availRewards} 
           </NavbarText> 
           <NavbarText style={{color: 'white'}} className="ml-auto d-flex justify-content-center">
           Claimed: ${this.state.claimedRewards} / ${this.state.totalRewards}
           </NavbarText> 
         </Navbar>
         <div style={{padding: '20px 100px 20px'}}>
-        
+        {this.state.activeItemType !=="todos" && 
+        <Button color="info" onClick={() => this.createItem({}, '', '')}>Add {this.state.activeItemType}</Button>}
         {this.state.activeItemType === 'todos' &&  
           <Table 
           data = {this.state.todoList} 
@@ -173,6 +151,7 @@ handleDelete = (item) => {
           onSubmit={this.handleSubmit}
           onCreate={this.createItem}
           projectData = {this.state.projectList}
+          activeItem = {this.state.activeItem}
           />}
         {this.state.activeItemType === 'projects' &&
         <Cards 
@@ -185,6 +164,7 @@ handleDelete = (item) => {
         <Cards 
         data = {this.state.habitList} 
         onEdit={this.editItem}
+        onCreate={this.createItem}
         activeItemType={this.state.activeItemType}
         />}
         {this.state.activeItemType === 'wishlist' &&

@@ -19,7 +19,6 @@ def refreshTodos():
         exist = 0
         prevstartdate = timezone.now()
         prevduedate = timezone.now()
-        print(habit)
         for inprogress in inprogress_list:
             count = 0
             if habit == inprogress.habit:
@@ -31,8 +30,6 @@ def refreshTodos():
                     prevstartdate = completed.startdate
             frequency = habit.frequency
         if exist == 0: #if it does not exist, create new Todo with new duedate
-            print(exist)
-            print('created new todo')
             if frequency == 'Daily':
                 duedate = prevduedate + relativedelta(days = 1)
                 startdate = prevstartdate  + relativedelta(days = 1)

@@ -29,8 +29,8 @@ export default class CustomCard extends Component {
               <FcClock/> Invested {item.total_effort} hrs
               </CardText>
               <CardText>
-              <Button color='info' onClick={() => onCreate(item, 'todos')}>Add todo</Button>&nbsp;
-              <Button color="primary" disabled={true}>View todos</Button>
+              <Button color='info' onClick={() => onCreate(item, 'todos', '')}>Add todo</Button>&nbsp;
+              <Button color="primary" onClick={() => onCreate(item, 'todos', 'projects')}>View todos</Button>
               </CardText>
               </CardBody>
               </Card>)})}
@@ -48,7 +48,7 @@ export default class CustomCard extends Component {
                     <FcMoneyTransfer/> Earned ${item.total_rewards} <br></br>
                     <FcClock/> Invested {item.total_effort} hrs
                     </CardText>
-                    <Button color="primary" disabled={true}>View Todos</Button>
+                    <Button color="primary" onClick={() => onCreate(item, 'todos', 'habits')}>View todos</Button>
                     </CardBody>
                     </Card>)})}
               </CardColumns>) 

@@ -10,42 +10,50 @@ export default class CustomTable extends Component {
       super(props);
       this.state = {
         data: this.props.data,
-        projects: true,
-        complete: false,
+        projectsTab: false,
+        completeTab: false,
         selectedProjectHabit: false,
-        projectData: this.props.projectData
-
+        projectData: this.props.projectData,
       };
+    }
+
+componentDidMount() {
+    const { activeItem } = this.props;
+    if (activeItem.view){
+        this.setState({ selectedProjectHabit: activeItem.title})
+        if (activeItem.view === "projects"){
+            this.setState({ projectsTab: true})
+        }
+        
+    }
     }
 filterProjectHabit = (e) => {
     let { value } = e.target;
     this.setState({ selectedProjectHabit: value})
     };
+
 render() {
     const { data, onEdit, onSubmit, onCreate, projectData } = this.props;
-    const { projects, complete, selectedProjectHabit} = this.state;
+    const { projectsTab, completeTab, selectedProjectHabit} = this.state;
     let filteredData, dropDownList;
-    if (projects) {
+    if (projectsTab) {
         filteredData = data.filter((todo) => todo.project !==  null)
     }
     else {
         filteredData = data.filter((todo) => todo.project === null)
     }
-    if (complete) {
+    if (completeTab) {
         filteredData = filteredData.filter((todo) => todo.completedate !==  null)
     }
     else {
         filteredData = filteredData.filter((todo) => todo.completedate === null)
-        // if (!projects){
-        //     filteredData = filteredData.filter((todo) => todo.frequency !== "Daily" || todo.title === "Journal")
-        // }
     }
     dropDownList = [...new Set(filteredData.map(item => item.projecthabit_name))];
     let selectedProject;
     selectedProject = '';
     if (selectedProjectHabit){
         filteredData = filteredData.filter((todo) => todo.projecthabit_name ===  selectedProjectHabit)
-        if (projects) {
+        if (projectsTab) {
             selectedProject = projectData.filter((project) => project.title === selectedProjectHabit)[0]
         }
     }
@@ -54,28 +62,31 @@ render() {
 
         <Navbar  expand="md"  bg="dark" variant="light">
         <Nav className="mr-auto" tabs>
-            <NavLink className={(this.state.projects === true) ? "active" : ""} onClick={() => this.setState({ projects: true, selectedProjectHabit: false})}>Projects</NavLink>
-            <NavLink className={(this.state.projects !== true) ? "active" : ""} onClick={() => this.setState({ projects: false, selectedProjectHabit: false})}>Habits</NavLink> 
+            <NavLink className={(this.state.projectsTab !== true) ? "active" : ""} onClick={() => this.setState({ projectsTab: false, selectedProjectHabit: false})}>Habits</NavLink> 
+            <NavLink className={(this.state.projectsTab === true) ? "active" : ""} onClick={() => this.setState({ projectsTab: true, selectedProjectHabit: false})}>Projects</NavLink>
             <NavLink><Input
-        type="select"
-        name="select"
-        id="select"
-        onChange={this.filterProjectHabit}
-        >
-        <option value=''>Show All</option>
-        {dropDownList.map(item => {
-            return (
-                <option key={item} name={item}>
-                {item}
-                </option>
-            );
-            })}
-        </Input></NavLink>
-        <NavLink><Button color='info' onClick={() => onCreate(selectedProject, 'todos')}>Add todo</Button></NavLink>
+                type="select"
+                name="select"
+                id="select"
+                value = {this.state.selectedProjectHabit}
+                onChange={this.filterProjectHabit}
+                >   
+                <option value=''>All</option>
+                {dropDownList.map(item => {
+                    return (
+                        <option key={item} name={item}>
+                        {item}
+                        </option>
+                    );
+                    })}
+            </Input></NavLink>
+            <NavLink>
+                {this.state.projects === true && <Button color='info' onClick={() => onCreate(selectedProject, 'todos', '')}>Add todo</Button>}
+            </NavLink>
         </Nav>
           <Nav className="ml-auto" tabs>
-              <NavLink className={(this.state.complete !== true) ? "active" : ""} onClick={() => this.setState({ complete: false})}>In Progress/ Backlog</NavLink>
-              <NavLink className={(this.state.complete === true) ? "active" : ""} onClick={() => this.setState({ complete: true})}>Completed</NavLink>
+              <NavLink className={(this.state.completeTab !== true) ? "active" : ""} onClick={() => this.setState({ completeTab: false})}>In Progress/ Backlog</NavLink>
+              <NavLink className={(this.state.completeTab === true) ? "active" : ""} onClick={() => this.setState({ completeTab: true})}>Completed</NavLink>
           </Nav>
           </Navbar>
 
