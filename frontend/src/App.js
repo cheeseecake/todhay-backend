@@ -1,9 +1,9 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 // import M from 'materialize-css';
-import Modal from "./components/Modal";
-import Table from "./components/Table";
-import Cards from "./components/Cards";
-import { FaPiggyBank } from "react-icons/fa";
+import Modal from './components/Modal';
+import Table from './components/Table';
+import Cards from './components/Cards';
+import { FaPiggyBank } from 'react-icons/fa';
 import {
   Navbar,
   Nav,
@@ -11,13 +11,12 @@ import {
   NavbarText,
   Button
 } from 'reactstrap';
-import axios from "axios";
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      today: new Date().toLocaleString('default', { weekday: "long", day: "numeric", month: 'short', year: "numeric" }),
-      activeItemType: "todos",
+      today: new Date().toLocaleString('default', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' }),
+      activeItemType: 'todos',
       projectList: [],
       todoList: [],
       habitList: [],
@@ -27,7 +26,7 @@ class App extends Component {
       availRewards: 0,
       claimedRewards: 0,
       activeItem: {
-        title: ""
+        title: ''
       },
     };
   }
@@ -37,22 +36,22 @@ class App extends Component {
 
   }
   refreshList = async () => {
-    await axios
-      .get("/api/todos/")
-      .then((res) => this.setState({ todoList: res.data }))
-      .catch((err) => console.log(err));
-    await axios
-      .get("/api/projects/")
-      .then((res) => this.setState({ projectList: res.data }))
-      .catch((err) => console.log(err));
-    await axios
-      .get("/api/habits/")
-      .then((res) => this.setState({ habitList: res.data }))
-      .catch((err) => console.log(err));
-    await axios
-      .get("/api/wishlist/")
-      .then((res) => this.setState({ wishList: res.data }))
-      .catch((err) => console.log(err));
+    fetch('/api/projects/', {method:'GET'})
+      .then(res => res.json())
+      .then(data => this.setState({ projectList: data }))
+      .catch(err => console.log(err));
+    fetch('/api/habits/', {method:'GET'})
+      .then(res => res.json())
+      .then(data => this.setState({ habitList: data }))
+      .catch(err => console.log(err));
+    await fetch('/api/todos/', {method:'GET'})
+      .then(res => res.json())
+      .then(data => this.setState({ todoList: data }))
+      .catch(err => console.log(err));
+    await fetch('/api/wishlist/', {method:'GET'})
+      .then(res => res.json())
+      .then(data => this.setState({ wishList: data }))
+      .catch(err => console.log(err));
     this.refreshRewards();
   };
 
@@ -76,9 +75,9 @@ class App extends Component {
 
   createItem = (item, type, view) => {
     let modalState = true;
-    let newItem = { title: "" };
+    let newItem = { title: '' };
     if (!type) {type = this.state.activeItemType;}
-    if (item.id) { newItem = { project: item.id, title: ""};}
+    if (item.id) { newItem = { project: item.id, title: ''};}
     if (view) {
       modalState = false;
       newItem = { view: view, title: item.title };
@@ -95,55 +94,68 @@ handleSubmit = async (item, action) => {
   console.log(item)
   let activeItem;
   switch(action) {
-  case "complete":
-    activeItem = { ...item, 'completedate': new Date().toLocaleDateString("fr-CA")};
+  case 'complete':
+    activeItem = { ...item, 'completedate': new Date().toLocaleDateString('fr-CA')};
     break;
   default:
     activeItem = { ...item};
   }
   if (item.id) {
-    await axios
-      .put(`/api/${this.state.activeItemType}/${activeItem.id}/`, activeItem)
-      .then((res) => this.refreshList());
+    await fetch(`/api/${this.state.activeItemType}/${activeItem.id}/`, {
+      method: 'PUT',
+      headers: {
+        'Accept': "application/json, text/plain, */*",
+        'Content-Type': "application/json;charset=utf-8"
+    },
+      body: JSON.stringify(activeItem)
+    })
+      .then(res => this.refreshList());
     return;
   }
-  await axios
-    .post(`/api/${this.state.activeItemType}/`, activeItem)
+  await fetch(`/api/${this.state.activeItemType}/`, {
+    method: 'POST',
+    headers: {
+      'Accept': "application/json, text/plain, */*",
+      'Content-Type': "application/json;charset=utf-8"
+  },
+    body: JSON.stringify(activeItem)
+  })
     .then((res) => this.refreshList());
 };
 
 handleDelete = (item) => {
   this.setState({ modal: false});
-  axios
-    .delete(`/api/${this.state.activeItemType}/${item.id}/`)
+  fetch(`/api/${this.state.activeItemType}/${item.id}/`, {
+    method: 'DELETE'
+  })
     .then((res) => this.refreshList());
 };
 
   render() {
     return (
       <div>
-      <Navbar style={{backgroundColor: '#2D3047'}}  expand="md"  bg="dark" variant="light">
-            <Nav className="mr-auto" tabs>
-                <NavLink className={(this.state.activeItemType === 'todos') ? "active" : ""} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => this.setState({ activeItemType: 'todos'})}>Todos</NavLink>
-                <NavLink className={(this.state.activeItemType === 'projects') ? "active" : ""} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => this.setState({ activeItemType: 'projects'})}>Projects</NavLink>
-                <NavLink className={(this.state.activeItemType === 'habits') ? "active" : ""} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => this.setState({ activeItemType: 'habits'})}>Habits</NavLink>
-                <NavLink className={(this.state.activeItemType === 'wishlist') ? "active" : ""} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => this.setState({ activeItemType: 'wishlist'})}>Wishlist</NavLink>
+      <Navbar style={{backgroundColor: '#2D3047'}}  expand='md'  bg='dark' variant='light'>
+            <Nav className='mr-auto' tabs>
+                <NavLink className={(this.state.activeItemType === 'todos') ? 'active' : ''} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => this.setState({ activeItemType: 'todos'})}>Todos</NavLink>
+                <NavLink className={(this.state.activeItemType === 'projects') ? 'active' : ''} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => this.setState({ activeItemType: 'projects'})}>Projects</NavLink>
+                <NavLink className={(this.state.activeItemType === 'habits') ? 'active' : ''} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => this.setState({ activeItemType: 'habits'})}>Habits</NavLink>
+                <NavLink className={(this.state.activeItemType === 'wishlist') ? 'active' : ''} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => this.setState({ activeItemType: 'wishlist'})}>Wishlist</NavLink>
               </Nav>
-          <NavbarText style={{color: 'white'}} className="d-flex justify-content-center">
+          <NavbarText style={{color: 'white'}} className='d-flex justify-content-center'>
           {this.state.today}
           </NavbarText>
         </Navbar>
-        <Navbar style={{backgroundColor: '#2D3047'}}  expand="md"  bg="dark" variant="light">
-        <NavbarText style={{color: 'white'}} className="mr-auto d-flex justify-content-center">
+        <Navbar style={{backgroundColor: '#2D3047'}}  expand='md'  bg='dark' variant='light'>
+        <NavbarText style={{color: 'white'}} className='mr-auto d-flex justify-content-center'>
         <FaPiggyBank/> Available: ${this.state.availRewards} 
           </NavbarText> 
-          <NavbarText style={{color: 'white'}} className="ml-auto d-flex justify-content-center">
-          Claimed: ${this.state.claimedRewards} / ${this.state.totalRewards}
+          <NavbarText style={{color: 'white'}} className='ml-auto d-flex justify-content-center'>
+          Redeemed: ${this.state.claimedRewards} / ${this.state.totalRewards}
           </NavbarText> 
         </Navbar>
         <div style={{padding: '20px 100px 20px'}}>
-        {this.state.activeItemType !=="todos" && 
-        <Button color="info" onClick={() => this.createItem({}, '', '')}>Add {this.state.activeItemType}</Button>}
+        {this.state.activeItemType !=='todos' && 
+        <Button color='info' onClick={() => this.createItem({}, '', '')}>Add {this.state.activeItemType}</Button>}
         {this.state.activeItemType === 'todos' &&  
           <Table 
           data = {this.state.todoList} 
