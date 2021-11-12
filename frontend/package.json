@@ -1,12 +1,9 @@
 {
   "name": "frontend",
   "version": "0.1.0",
-  "proxy": "http://localhost:8000",
+  "proxy": "http://backend:8000",
   "private": true,
   "dependencies": {
-    "@testing-library/jest-dom": "^5.15.0",
-    "@testing-library/react": "^12.1.2",
-    "@testing-library/user-event": "^13.5.0",
     "axios": "^0.24.0",
     "bootstrap": "^4.6.0",
     "materialize-css": "^1.0.0",
@@ -20,8 +17,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "preinstall": "npx npm-force-resolutions"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -42,26 +38,5 @@
     ]
   },
   "devDependencies": {
-    "@babel/core": "^7.16.0",
-    "@babel/eslint-parser": "^7.16.0",
-    "ansi-regex": "^6.0.1",
-    "browserslist": "^4.17.6",
-    "canvas": "^2.8.0",
-    "glob-parent": "^6.0.2",
-    "immer": "^9.0.6",
-    "jquery": "^3.6.0",
-    "nth-check": "^2.0.1",
-    "set-value": "^4.1.0",
-    "ts-node": "^10.4.0",
-    "type-fest": "^2.5.2",
-    "web-vitals": "^2.1.2"
-  },
-  "resolutions": {
-    "glob-parent": "^5.1.2",
-    "immer": "^9.0.6",
-    "set-value": "^4.0.1",
-    "ansi-regex": "^5.0.1",
-    "nth-check": "^2.0.1",
-    "browserslist": "^4.16.5"
   }
 }

@@ -1,7 +1,10 @@
-
+# Python cache files
 *.pyc
+__pycache__
+
 .DS_Store
 .env
+.venv
 
 # npm
 /frontend/node_modules/
@@ -9,5 +12,3 @@
 # Logs
 logs
 *.log
-backend/todos/migrations/*
-backend/db.sqlite3

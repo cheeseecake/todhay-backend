@@ -77,4 +77,3 @@ class Wishlist(models.Model):
     class Meta:
         verbose_name_plural = ("Wishlist")
         ordering = ['-repeat','count', 'cost']
-
