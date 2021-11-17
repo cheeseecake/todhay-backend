@@ -1,8 +1,9 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 // import M from 'materialize-css';
 import Modal from './components/Modal';
 import Table from './components/Table';
 import Cards from './components/Cards';
+import DateTime from './components/DateTime';
 import { FaPiggyBank } from 'react-icons/fa';
 import {
   Navbar,
@@ -11,87 +12,79 @@ import {
   NavbarText,
   Button
 } from 'reactstrap';
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      today: new Date().toLocaleString('default', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' }),
-      activeItemType: 'todos',
-      projectList: [],
-      todoList: [],
-      habitList: [],
-      wishList: [],
-      modal: false,
-      totalRewards: 0, 
-      availRewards: 0,
-      claimedRewards: 0,
-      activeItem: {
-        title: ''
-      },
-    };
-  }
-  componentDidMount() {
-    this.refreshList();
-    this.refreshRewards();
 
-  }
-  refreshList = async () => {
+function App (){
+  // State
+  const [activeItemType, setActiveItemType] = useState('todos');
+  const [modal, setModal] = useState(false);
+  const [activeItem, setActiveItem] = useState({'title':''});
+
+  const [projectList, setprojectList] = useState([]);
+  const [habitList, sethabitList] = useState([]);
+  const [todoList, settodoList] = useState([]);
+  const [wishList, setwishList] = useState([]);
+ 
+  const [claimedRewards, setclaimedRewards] = useState(0);
+  const [totalRewards, settotalRewards] = useState(0);
+
+  const refreshList = () => {
     fetch('/api/projects/', {method:'GET'})
       .then(res => res.json())
-      .then(data => this.setState({ projectList: data }))
+      .then(data => setprojectList(data))
       .catch(err => console.log(err));
     fetch('/api/habits/', {method:'GET'})
       .then(res => res.json())
-      .then(data => this.setState({ habitList: data }))
+      .then(data => sethabitList(data))
       .catch(err => console.log(err));
-    await fetch('/api/todos/', {method:'GET'})
+    fetch('/api/todos/', {method:'GET'})
       .then(res => res.json())
-      .then(data => this.setState({ todoList: data }))
+      .then(data => settodoList(data))
       .catch(err => console.log(err));
-    await fetch('/api/wishlist/', {method:'GET'})
+    fetch('/api/wishlist/', {method:'GET'})
       .then(res => res.json())
-      .then(data => this.setState({ wishList: data }))
+      .then(data => setwishList(data))
       .catch(err => console.log(err));
-    this.refreshRewards();
   };
 
-  refreshRewards = () => {
-    const { wishList, todoList} = this.state;
-    let claimedRewards, totalRewards, availRewards;
+  useEffect(() => {
+    refreshList();
+    }, []);
+  
+  useEffect(() => {
     var completedTodoList = todoList.filter((todo) => todo.completedate !== null)
-    totalRewards = completedTodoList.reduce((accumulator, todo) => accumulator + parseFloat(todo.reward), 0).toFixed(2)
+    settotalRewards(completedTodoList.reduce((accumulator, todo) => accumulator + parseFloat(todo.reward), 0).toFixed(2))
     var claimedWishList = wishList.filter((wish) => wish.purchasedate !== null)
-    claimedRewards = claimedWishList.reduce((accumulator, wish) => accumulator + parseFloat(wish.cost*wish.count), 0).toFixed(2)
-    availRewards = (totalRewards - claimedRewards)
-    this.setState({
-      totalRewards,
-      claimedRewards,
-      availRewards
-    })
-  }
-  toggle = () => {
-    this.setState({ modal: !this.state.modal });
+    setclaimedRewards(claimedWishList.reduce((accumulator, wish) => accumulator + parseFloat(wish.cost*wish.count), 0).toFixed(2))
+      }, [todoList, wishList]);
+
+  // Action: code that causes an update to the state when something happens
+  const toggle = () => {
+    setModal(!modal);
+    refreshList();
   };
 
-  createItem = (item, type, view) => {
+  const createItem = (item, type, view) => {
     let modalState = true;
     let newItem = { title: '' };
-    if (!type) {type = this.state.activeItemType;}
+    if (!type) {type = activeItemType;}
     if (item.id) { newItem = { project: item.id, title: ''};}
     if (view) {
       modalState = false;
       newItem = { view: view, title: item.title };
     }  
-    this.setState({ activeItem: newItem, modal: modalState, activeItemType: type});
+    setActiveItem(newItem);
+    setModal(modalState);
+    setActiveItemType(type)
   };
 
-  editItem = (item, type) => {
-    this.setState({ activeItem: item, modal: !this.state.modal, activeItemType: type});
+ const editItem = (item, type) => {
+    setActiveItem(item);
+    setModal(!modal);
+    setActiveItemType(type)
   };
-
-handleSubmit = async (item, action) => {
-  this.setState({ modal: false});
-  console.log(item)
+  
+ const handleSave = (item, activeItemType, action) => {
+  setModal(!modal);
   let activeItem;
   switch(action) {
   case 'complete':
@@ -101,107 +94,94 @@ handleSubmit = async (item, action) => {
     activeItem = { ...item};
   }
   if (item.id) {
-    await fetch(`/api/${this.state.activeItemType}/${activeItem.id}/`, {
+    fetch(`/api/${activeItemType}/${activeItem.id}/`, {
       method: 'PUT',
-      headers: {
-        'Accept': "application/json, text/plain, */*",
-        'Content-Type': "application/json;charset=utf-8"
-    },
+      headers: {'Content-Type': "application/json"},
       body: JSON.stringify(activeItem)
     })
-      .then(res => this.refreshList());
     return;
   }
-  await fetch(`/api/${this.state.activeItemType}/`, {
+  fetch(`/api/${activeItemType}/`, {
     method: 'POST',
-    headers: {
-      'Accept': "application/json, text/plain, */*",
-      'Content-Type': "application/json;charset=utf-8"
-  },
+    headers: {'Content-Type': "application/json"},
     body: JSON.stringify(activeItem)
   })
-    .then((res) => this.refreshList());
 };
-
-handleDelete = (item) => {
-  this.setState({ modal: false});
-  fetch(`/api/${this.state.activeItemType}/${item.id}/`, {
-    method: 'DELETE'
-  })
-    .then((res) => this.refreshList());
-};
-
-  render() {
-    return (
+  
+const handleDelete = (item, activeItemType) => {
+    setModal(false);
+    fetch(`/api/${activeItemType}/${item.id}/`, {
+      method: 'DELETE'
+    })
+  }
+  
+// View: the UI definition
+return (
       <div>
       <Navbar style={{backgroundColor: '#2D3047'}}  expand='md'  bg='dark' variant='light'>
             <Nav className='mr-auto' tabs>
-                <NavLink className={(this.state.activeItemType === 'todos') ? 'active' : ''} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => this.setState({ activeItemType: 'todos'})}>Todos</NavLink>
-                <NavLink className={(this.state.activeItemType === 'projects') ? 'active' : ''} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => this.setState({ activeItemType: 'projects'})}>Projects</NavLink>
-                <NavLink className={(this.state.activeItemType === 'habits') ? 'active' : ''} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => this.setState({ activeItemType: 'habits'})}>Habits</NavLink>
-                <NavLink className={(this.state.activeItemType === 'wishlist') ? 'active' : ''} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => this.setState({ activeItemType: 'wishlist'})}>Wishlist</NavLink>
+                <NavLink className={(activeItemType === 'todos') ? 'active' : ''} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => setActiveItemType('todos')}>Todos</NavLink>
+                <NavLink className={(activeItemType === 'projects') ? 'active' : ''} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => setActiveItemType('projects')}>Projects</NavLink>
+                <NavLink className={(activeItemType === 'habits') ? 'active' : ''} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => setActiveItemType('habits')}>Habits</NavLink>
+                <NavLink className={(activeItemType === 'wishlist') ? 'active' : ''} style={{color: 'white', backgroundColor: '#2D3047'}} onClick={() => setActiveItemType('wishlist')}>Wishlist</NavLink>
               </Nav>
           <NavbarText style={{color: 'white'}} className='d-flex justify-content-center'>
-          {this.state.today}
+            <DateTime/>
           </NavbarText>
         </Navbar>
         <Navbar style={{backgroundColor: '#2D3047'}}  expand='md'  bg='dark' variant='light'>
-        <NavbarText style={{color: 'white'}} className='mr-auto d-flex justify-content-center'>
-        <FaPiggyBank/> Available: ${this.state.availRewards} 
+          <NavbarText style={{color: 'white'}} className='mr-auto d-flex justify-content-center'>
+            <FaPiggyBank/> Available: ${(totalRewards - claimedRewards)} 
           </NavbarText> 
           <NavbarText style={{color: 'white'}} className='ml-auto d-flex justify-content-center'>
-          Redeemed: ${this.state.claimedRewards} / ${this.state.totalRewards}
+            Redeemed: ${claimedRewards} / ${totalRewards}
           </NavbarText> 
         </Navbar>
         <div style={{padding: '20px 100px 20px'}}>
-        {this.state.activeItemType !=='todos' && 
-        <Button color='info' onClick={() => this.createItem({}, '', '')}>Add {this.state.activeItemType}</Button>}
-        {this.state.activeItemType === 'todos' &&  
+        {activeItemType !=='todos' && 
+        <Button color='info' onClick={() => createItem({}, '', '')}>Add {activeItemType}</Button>}
+        {activeItemType === 'todos' &&  
           <Table 
-          data = {this.state.todoList} 
-          onEdit={this.editItem}
-          onSubmit={this.handleSubmit}
-          onCreate={this.createItem}
-          projectData = {this.state.projectList}
-          activeItem = {this.state.activeItem}
+          todoData = {todoList} 
+          projectData = {projectList}
+          activeItem = {activeItem}
+          onEdit={editItem}
+          onCreate={createItem}
           />}
-        {this.state.activeItemType === 'projects' &&
-        <Cards 
-        data = {this.state.projectList} 
-        onEdit={this.editItem}
-        onCreate={this.createItem}
-        activeItemType={this.state.activeItemType}
-        />}
-        {this.state.activeItemType === 'habits' &&
-        <Cards 
-        data = {this.state.habitList} 
-        onEdit={this.editItem}
-        onCreate={this.createItem}
-        activeItemType={this.state.activeItemType}
-        />}
-        {this.state.activeItemType === 'wishlist' &&
-        <Cards 
-        data = {this.state.wishList} 
-        onEdit={this.editItem}
-        activeItemType={this.state.activeItemType}
-        availRewards = {this.state.availRewards}
-        onSubmit={this.handleSubmit}
-        />}        
-        {this.state.modal ? (
+        {activeItemType === 'projects' &&
+          <Cards 
+          data = {projectList} 
+          activeItemType={activeItemType}
+          onEdit={editItem}
+          onCreate={createItem}
+          />}
+        {activeItemType === 'habits' &&
+          <Cards 
+          data = {habitList} 
+          activeItemType={activeItemType}
+          onEdit={editItem}
+          onCreate={createItem}
+          />}
+        {activeItemType === 'wishlist' &&
+          <Cards 
+          data = {wishList} 
+          activeItemType={activeItemType}
+          availRewards = {(totalRewards - claimedRewards)}
+          onEdit={editItem}
+          onSave={handleSave}
+          />}        
+        {modal ? (
           <Modal
-            data = {this.state.todoList} 
-            activeItem={this.state.activeItem}
-            activeItemType={this.state.activeItemType}
-            toggle={this.toggle}
-            onSave={this.handleSubmit}
-            onJournal={this.handleJournal}
-            onDelete={this.handleDelete}
+            activeItem={activeItem}
+            activeItemType={activeItemType}
+            toggle={toggle}
+            onSave={handleSave}
+            onDelete={handleDelete}
           />
         ) : null}
       </div>
       </div>
     );
-  }
 }
 
 export default App;
