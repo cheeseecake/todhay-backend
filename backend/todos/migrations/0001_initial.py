@@ -65,7 +65,6 @@ class Migration(migrations.Migration):
                 ('category', models.CharField(choices=[('Learning', 'Learning'), ('Financial', 'Financial'), ('Health', 'Health'), ('Social', 'Social')], default='Learning', max_length=20)),
                 ('frequency', models.CharField(choices=[('Daily', 'Daily'), ('Weekly', 'Weekly'), ('Monthly', 'Monthly'), ('Quarterly', 'Quarterly'), ('Yearly', 'Yearly')], default='Daily', max_length=20)),
                 ('enddate', models.DateField(blank=True, null=True)),
-                ('count', models.IntegerField(default=0)),
             ],
             options={
                 'verbose_name_plural': 'Habits',
