@@ -109,7 +109,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Asia/Singapore'
+# Store data in UTC; convert to appropriate timezone on the frontend
+TIME_ZONE = 'UTC'  
 
 USE_I18N = True
 

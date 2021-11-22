@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 from django.contrib import admin
 
 # Register your models here.
-from .models import Todos, Habits, Projects, Wishlist
-admin.site.register(Projects)
-admin.site.register(Todos)
-admin.site.register(Habits)
+from todos.models import Tag, List, Todo, Wishlist
+admin.site.register(Tag)
+admin.site.register(List)
+admin.site.register(Todo)
 admin.site.register(Wishlist) 

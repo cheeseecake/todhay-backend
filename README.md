@@ -11,23 +11,23 @@
   - `python manage.py makemigrations`
   - `python manage.py migrate`
 - Build docker-compose images:
-  - `docker-compose build`
+  - `docker compose build`
 - Run:
-  - `docker-compose up`
+  - `docker compose up`
   - View the app at [localhost:10000](http://localhost:10000)
 
 The DB (`db.sqlite3`) will be persisted across container restarts/deletes.
 
-Note: After changing any code, you'll need to rebuild and re-run the `docker-compose` commands to see the effect.
+Note: After changing any code, you'll need to rebuild and re-run the `docker compose` commands to see the effect.
 
 ## Known Issues
 
-- If you didn't create either the `.env` or `db.sqlite3` files and run `docker-compose up`, Docker creates empty folders with the same name. You'll have to remove them manually and rerun `docker-compose up --force-recreate` to restart the containers.
+- If you didn't create either the `.env` or `db.sqlite3` files and run `docker compose up`, Docker creates empty folders with the same name. You'll have to remove them manually and rerun `docker compose up --force-recreate` to restart the containers.
 
 ## Todo
 
+- **Backend: Write migrations**
+- **Frontend: Update to work with the new backend**
 - Frontend: Fix 'New Journal' not working
 - Frontend: Move to functional components
-- Frontend: Move from `axios` to `fetch` (less dependencies)
 - Frontend: Make app responsive
-- Docker: Use nginx container and multistage build instead of `npm start` and `proxy` in `package.json`
