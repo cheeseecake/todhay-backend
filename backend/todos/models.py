@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, timezone
 
 from dateutil.relativedelta import relativedelta
 from django.db import models
@@ -42,8 +42,25 @@ class Metadata(models.Model):
 
 
 class List(Metadata):
-    """Lists can have any combination of recurring/non-recurring todos within them."""
-    tags = models.ManyToManyField(Tag)
+    """Lists can have any combination of recurring/non-recurring todos within them.
+    When a list is saved, all children Todos are marked as completed"""
+    # https://stackoverflow.com/questions/2529472/how-do-i-make-many-to-many-field-optional-in-django?rq=1
+    tags = models.ManyToManyField(Tag, blank=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        # Don't update children todos if the list isn't marked as completed
+        if not self.completed_date:
+            return
+
+        for todo in self.todo_set.all():
+            if todo.completed_date:
+                continue
+            todo.completed_date = date.today()
+            todo.save()
+
+
 
 
 class Todo(Metadata):

@@ -1,9 +1,8 @@
 # Node 17 currently doesn't work with webpack :(
 FROM node:lts-alpine
 
-# Explicitly copy package.json, so that npm ci will run whenever new packages are installed
-COPY package.json package-lock.json ./frontend/
 WORKDIR /frontend
-RUN npm ci
 
-CMD ["npm", "start"]
+# `npm i` is run to ensure the node_modules is created locally, and then bind-mounted
+# Workaround for bind mounts overwriting the container's node_modules folder
+CMD npm i && npm start

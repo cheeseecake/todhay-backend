@@ -25,7 +25,7 @@ class TodoViewSet(viewsets.ModelViewSet):
         # Get the todo that is going to be updated
         old_todo = self.get_object()
 
-        # Perform the save at database level
+        # Perform the save at database level and get the updated object
         new_todo = serializer.save()
 
         # Check if completed_date was set in this update
@@ -46,17 +46,17 @@ class TodoViewSet(viewsets.ModelViewSet):
         if new_todo.frequency is None:
             return
 
-        # If today is past the todo's end_date, don't create any more recurring todos
-        if date.today() >= new_todo.end_date:
+        # If end_date is set, and today is past the todo's end_date, don't create any more recurring todos
+        if new_todo.end_date and date.today() >= new_todo.end_date:
             return
 
         # Calculate the new due_date and start_date
         relativedelta_to_add = FREQUENCIES[new_todo.frequency]
-        new_start_date = date.today()
+        new_start_date = old_todo.start_date + relativedelta_to_add
         new_due_date = new_start_date + relativedelta_to_add
 
-        # If new_due_date is past the todo's end_date, don't create the recurring todo
-        if new_due_date >= old_todo.end_date:
+        # If end_date is set, and new_due_date is past the todo's end_date, don't create the recurring todo
+        if new_todo.end_date and new_due_date >= new_todo.end_date:
             return
 
         # Clone the incoming Todo and set due_date, start_date
@@ -65,14 +65,16 @@ class TodoViewSet(viewsets.ModelViewSet):
         new_todo._state.adding = True
         new_todo.due_date = new_due_date
         new_todo.start_date = new_start_date
+        new_todo.completed_date = None
 
         # If the recurring todo already exists, don't bother creating it
         # We compare the List, title, description, due_date, start_date (that's probably enough)
-        if Todo.objects.exists(list=new_todo.list,
+        if Todo.objects.filter(list=new_todo.list,
                                title=new_todo.title,
                                description=new_todo.description,
                                due_date=new_todo.due_date,
-                               start_date=new_todo.start_date):
+                               start_date=new_todo.start_date,
+                               completed_date=new_todo.completed_date).exists():
             return
 
         # All the checks have passed, now we create the todo

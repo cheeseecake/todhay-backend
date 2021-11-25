@@ -2,7 +2,7 @@ import {Card, Button, CardTitle, CardImg, CardText, CardColumns, CardSubtitle, C
 import React, { useState } from "react";
 import { FcClock, FcMoneyTransfer } from "react-icons/fc";
 
-function CustomCard (props){
+export const Wishlist = (props) => {
   const [data] = useState(props.data);
   const [availRewards] = useState(props.availRewards);
   const [activeItemType] = useState(props.activeItemType);
@@ -74,4 +74,3 @@ function CustomCard (props){
     </div>
   )
   }
-export default CustomCard;
