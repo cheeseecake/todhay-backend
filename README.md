@@ -26,8 +26,4 @@ Note: After changing any code, you'll need to rebuild and re-run the `docker com
 
 ## Todo
 
-- **Backend: Write migrations**
-- **Frontend: Update to work with the new backend**
-- Frontend: Fix 'New Journal' not working
-- Frontend: Move to functional components
-- Frontend: Make app responsive
+See Issues

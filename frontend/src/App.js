@@ -1,140 +1,176 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { FaPiggyBank } from 'react-icons/fa';
-import { Nav, Navbar, NavbarText, NavLink } from 'reactstrap';
-import { DateTime } from './shared/DateTime';
-import { Lists } from './lists/Lists';
-import { Todos } from './todos/Todos';
-import { Wishlist } from './wishlist/Wishlist';
-import { getLists, getType } from './api/api';
+import React, { useCallback, useEffect, useState } from "react";
+import { FaPiggyBank } from "react-icons/fa";
+import { Nav, Navbar, NavbarText, NavLink } from "reactstrap";
+import { getType } from "./api/api";
+import { Lists } from "./lists/Lists";
+import { DateTime } from "./shared/DateTime";
+import { Todos } from "./todos/Todos";
+import { Wishlist } from "./wishlist/Wishlist";
 
-export const API_ROOT = '/api'
+export const API_ROOT = "/api";
 
 /* Enum of data types and their display values 
 This allows us to reference them as DATA_TYPES.[type],
 which prevents errors from typos happening further down.*/
 export const DATA_TYPES = {
   TAGS: {
-    displayName: 'Tags',
-    apiName: 'tags'
+    displayName: "Tags",
+    apiName: "tags",
   },
   TODOS: {
-    displayName: 'Todos',
-    apiName: 'todos'
+    displayName: "Todos",
+    apiName: "todos",
   },
   LISTS: {
-    displayName: 'Lists',
-    apiName: 'lists'
+    displayName: "Lists",
+    apiName: "lists",
   },
   WISHLIST: {
-    displayName: 'Wishlist',
-    apiName: 'wishlists'
-  }
-}
+    displayName: "Wishlist",
+    apiName: "wishlists",
+  },
+};
 
 export const App = () => {
-  const [activeDataType, setActiveDataType] = useState(DATA_TYPES.TODOS.apiName);
-  const [selectedListId, setSelectedListId] = useState()
+  const [activeDataType, setActiveDataType] = useState(
+    DATA_TYPES.TODOS.apiName
+  );
+  const [selectedListId, setSelectedListId] = useState();
 
   const [tags, setTags] = useState([]);
   const [lists, setLists] = useState([]);
   const [todos, setTodos] = useState([]);
   const [wishlist, setWishlist] = useState([]);
 
-  const refreshTags = useCallback(() =>
-    void getType(DATA_TYPES.TAGS)
-      .then(json => setTags(json)), [])
+  const refreshTags = useCallback(
+    () => void getType(DATA_TYPES.TAGS).then((json) => setTags(json)),
+    []
+  );
 
-  const refreshLists = useCallback(() =>
-    void getType(DATA_TYPES.LISTS)
-      .then(json => setLists(json)), [])
+  const refreshLists = useCallback(
+    () => void getType(DATA_TYPES.LISTS).then((json) => setLists(json)),
+    []
+  );
 
-  const refreshTodos = useCallback(() =>
-    void getType(DATA_TYPES.TODOS)
-      .then(json => setTodos(json)), [])
+  const refreshTodos = useCallback(
+    () => void getType(DATA_TYPES.TODOS).then((json) => setTodos(json)),
+    []
+  );
 
-  const refreshWishlists = useCallback(() =>
-    void getType(DATA_TYPES.WISHLIST)
-      .then(json => setWishlist(json)), [])
+  const refreshWishlist = useCallback(
+    () => void getType(DATA_TYPES.WISHLIST).then((json) => setWishlist(json)),
+    []
+  );
 
   useEffect(() => {
-    refreshTags()
-    refreshLists()
-    refreshTodos()
-    refreshWishlists()
+    refreshTags();
+    refreshLists();
+    refreshTodos();
+    refreshWishlist();
   }, []);
 
-  const viewTodosFromListId = listId => {
-    setSelectedListId(listId)
-    setActiveDataType(DATA_TYPES.TODOS.apiName)
-  }
+  const viewTodosFromListId = (listId) => {
+    setSelectedListId(listId);
+    setActiveDataType(DATA_TYPES.TODOS.apiName);
+  };
 
   // totalRewards and claimedRewards will be recalculated every render
   // It's not expensive, hence they're not memoized
-  const totalRewards = todos.filter(todo => !!todo.completed_date)
-    .reduce((acc, todo) => acc + parseFloat(todo.reward), 0)
+  const totalRewards = todos
+    .filter((todo) => !!todo.completed_date)
+    .reduce((acc, todo) => acc + parseFloat(todo.reward), 0);
 
   // I'm not sure where 'purchasedate' was previously calculated/derived from,
   // couldn't find it in the Wishlist model. So I'm assuming
   // just adding the count X costs of all the wishes should be the claimedRewards
-  const claimedRewards = wishlist.reduce((acc, wish) => acc + parseFloat(wish.cost) * parseFloat(wish.count), 0)
+  const claimedRewards = wishlist.reduce(
+    (acc, wish) => acc + parseFloat(wish.cost) * parseFloat(wish.count),
+    0
+  );
+
+  const availableRewards = totalRewards - claimedRewards;
 
   const views = {
     [DATA_TYPES.TAGS.apiName]: <p>Unimplemented!!</p>,
 
-    [DATA_TYPES.TODOS.apiName]: <Todos
-      lists={lists}
-      refreshTodos={refreshTodos}
-      selectedListId={selectedListId}
-      setSelectedListId={setSelectedListId}
-      todos={todos}
-    />,
+    [DATA_TYPES.TODOS.apiName]: (
+      <Todos
+        lists={lists}
+        refreshTodos={refreshTodos}
+        selectedListId={selectedListId}
+        setSelectedListId={setSelectedListId}
+        todos={todos}
+      />
+    ),
 
-    [DATA_TYPES.LISTS.apiName]: <Lists
-      lists={lists}
-      refreshLists={refreshLists}
-      refreshTodos={refreshTodos}
-      todos={todos}
-      viewTodosFromListId={viewTodosFromListId}
-    />,
+    [DATA_TYPES.LISTS.apiName]: (
+      <Lists
+        lists={lists}
+        refreshLists={refreshLists}
+        todos={todos}
+        viewTodosFromListId={viewTodosFromListId}
+      />
+    ),
 
-    [DATA_TYPES.WISHLIST.apiname]: <Wishlist
-      data={wishlist}
-      activeItemType={activeDataType}
-      availRewards={(totalRewards - claimedRewards)}
-      onEdit={() => { }}
-      onSave={() => { }}
-    />
-  }
+    [DATA_TYPES.WISHLIST.apiName]: (
+      <Wishlist
+        availableRewards={availableRewards}
+        refreshWishlist={refreshWishlist}
+        wishlist={wishlist}
+      />
+    ),
+  };
 
   return (
     <div>
-      <Navbar style={{ backgroundColor: '#2D3047' }} expand='md' bg='dark' variant='light'>
-        <Nav className='mr-auto' tabs>
-          {Object.entries(DATA_TYPES).map(([_, { apiName, displayName }]) =>
+      <Navbar
+        style={{ backgroundColor: "#2D3047" }}
+        expand="md"
+        bg="dark"
+        variant="light"
+      >
+        <Nav className="mr-auto" tabs>
+          {Object.entries(DATA_TYPES).map(([_, { apiName, displayName }]) => (
             <NavLink
               key={displayName}
               active={apiName === activeDataType}
-              style={{ color: 'white', backgroundColor: '#2D3047' }}
-              onClick={() => setActiveDataType(apiName)}>{displayName}
+              style={{ color: "white", backgroundColor: "#2D3047" }}
+              onClick={() => setActiveDataType(apiName)}
+            >
+              {displayName}
             </NavLink>
-          )}
+          ))}
         </Nav>
-        <NavbarText style={{ color: 'white' }} className='d-flex justify-content-center'>
+        <NavbarText
+          style={{ color: "white" }}
+          className="d-flex justify-content-center"
+        >
           <DateTime />
         </NavbarText>
       </Navbar>
-      <Navbar style={{ backgroundColor: '#2D3047' }} expand='md' bg='dark' variant='light'>
-        <NavbarText style={{ color: 'white' }} className='mr-auto d-flex justify-content-center'>
-          <FaPiggyBank /> Available: ${totalRewards - claimedRewards}
+      <Navbar 
+        style={{ backgroundColor: "#2D3047" }}
+        expand="md"
+        bg="dark"
+        variant="light"
+      >
+        <NavbarText 
+          style={{ color: "white" }}
+          className="mr-auto d-flex justify-content-center"
+        >
+          <FaPiggyBank /> Available: ${(totalRewards - claimedRewards).toFixed(2)}
         </NavbarText>
-        <NavbarText style={{ color: 'white' }} className='ml-auto d-flex justify-content-center'>
-          Redeemed: ${claimedRewards} / ${totalRewards}
+        <NavbarText
+          style={{ color: "white" }}
+          className="ml-auto d-flex justify-content-center"
+        >
+          Redeemed: ${claimedRewards.toFixed(2)} / ${totalRewards.toFixed(2)}
         </NavbarText>
       </Navbar>
-      <div style={{ padding: '20px 100px 20px' }}>
+      <div style={{ padding: "20px 100px 20px" }}>
         {/* We display the appropriate view based on activeDataType*/}
         {views[activeDataType]}
       </div>
     </div>
   );
-}
+};
