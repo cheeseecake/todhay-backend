@@ -21,7 +21,6 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish }) => {
   const onSubmit = () => {
     const id = wish?.id;
 
-    /* We have to do '|| null', to make the frontend from send 'null' instead of the blank string ''.*/
     const wishData = {
       title: formRef.current.title.value,
       cost: formRef.current.cost.value,

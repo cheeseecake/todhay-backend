@@ -2,10 +2,12 @@ import { format, parseISO } from "date-fns";
 import React, { useState } from "react";
 import { FcClock, FcMoneyTransfer } from "react-icons/fc";
 import {
+  Badge,
   Button,
   Card,
   CardBody,
   CardColumns,
+  CardSubtitle,
   CardText,
   CardTitle,
 } from "reactstrap";
@@ -14,7 +16,13 @@ import { DATA_TYPES } from "../App";
 import { formatDays } from "../shared/util";
 import { ListsModal } from "./ListsModal";
 
-export const Lists = ({ lists, refreshLists, todos, viewTodosFromListId }) => {
+export const Lists = ({
+  lists,
+  refreshLists,
+  tags,
+  todos,
+  viewTodosFromListId,
+}) => {
   const [editingList, setEditingList] = useState();
 
   const onDelete = (list) =>
@@ -35,6 +43,8 @@ export const Lists = ({ lists, refreshLists, todos, viewTodosFromListId }) => {
       0
     );
 
+    const totalPendingTodos = todos.filter(todo => !todo.completed_date && todo.list === list.id).length
+
     return (
       <Card
         key={list.id}
@@ -42,7 +52,12 @@ export const Lists = ({ lists, refreshLists, todos, viewTodosFromListId }) => {
         onClick={() => setEditingList(list)}
       >
         <CardBody>
-          <CardTitle tag="h5">{list.title}</CardTitle>
+          <div>
+            {list.tags.map(id => (
+              <Badge pill key={id} style={{margin: '5px 5px 5px 0'}}>{tags.find(tag => tag.id === id).title}</Badge>
+            ))}
+          </div>
+          <CardTitle tag="h5">{list.title} ({totalPendingTodos} todo{totalPendingTodos !== 1 && 's'})</CardTitle>
 
           <CardText>
             {list.due_date
@@ -94,6 +109,7 @@ export const Lists = ({ lists, refreshLists, todos, viewTodosFromListId }) => {
           <ListsModal
             list={editingList}
             setList={setEditingList}
+            tags={tags}
             refreshLists={refreshLists}
           />
         )}

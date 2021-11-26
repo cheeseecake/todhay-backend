@@ -4,6 +4,7 @@ import { Nav, Navbar, NavbarText, NavLink } from "reactstrap";
 import { getType } from "./api/api";
 import { Lists } from "./lists/Lists";
 import { DateTime } from "./shared/DateTime";
+import { Tags } from "./tags/Tags";
 import { Todos } from "./todos/Todos";
 import { Wishlist } from "./wishlist/Wishlist";
 
@@ -91,7 +92,9 @@ export const App = () => {
   const availableRewards = totalRewards - claimedRewards;
 
   const views = {
-    [DATA_TYPES.TAGS.apiName]: <p>Unimplemented!!</p>,
+    [DATA_TYPES.TAGS.apiName]: (
+      <Tags lists={lists} todos={todos} refreshTags={refreshTags} tags={tags} />
+    ),
 
     [DATA_TYPES.TODOS.apiName]: (
       <Todos
@@ -107,6 +110,7 @@ export const App = () => {
       <Lists
         lists={lists}
         refreshLists={refreshLists}
+        tags={tags}
         todos={todos}
         viewTodosFromListId={viewTodosFromListId}
       />
@@ -130,7 +134,7 @@ export const App = () => {
         variant="light"
       >
         <Nav className="mr-auto" tabs>
-          {Object.entries(DATA_TYPES).map(([_, { apiName, displayName }]) => (
+          {Object.entries(DATA_TYPES).map(([, { apiName, displayName }]) => (
             <NavLink
               key={displayName}
               active={apiName === activeDataType}
@@ -148,17 +152,18 @@ export const App = () => {
           <DateTime />
         </NavbarText>
       </Navbar>
-      <Navbar 
+      <Navbar
         style={{ backgroundColor: "#2D3047" }}
         expand="md"
         bg="dark"
         variant="light"
       >
-        <NavbarText 
+        <NavbarText
           style={{ color: "white" }}
           className="mr-auto d-flex justify-content-center"
         >
-          <FaPiggyBank /> Available: ${(totalRewards - claimedRewards).toFixed(2)}
+          <FaPiggyBank /> Available: $
+          {(totalRewards - claimedRewards).toFixed(2)}
         </NavbarText>
         <NavbarText
           style={{ color: "white" }}

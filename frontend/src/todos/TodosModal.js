@@ -24,7 +24,7 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
   const onSubmit = () => {
     const id = todo?.id;
 
-    /* We have to do '|| null', to make the frontend from send 'null' instead of the blank string ''.*/
+    /* We have to do '|| null', to make the frontend send 'null' instead of the blank string ''.*/
     const todoData = {
       completed_date: formRef.current.completed_date.value || null,
       description: formRef.current.description.value,

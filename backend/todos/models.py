@@ -19,7 +19,7 @@ FREQUENCIES = {
 
 class Tag(models.Model):
     """Can be set on Lists, e.g. 'Habit', 'Learning', 'Social', 'Work', or any combination of them"""
-    name = models.TextField()
+    title = models.TextField()
 
 
 class Metadata(models.Model):

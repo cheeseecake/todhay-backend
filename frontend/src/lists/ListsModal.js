@@ -11,12 +11,12 @@ import {
   ModalBody,
   ModalFooter,
   ModalHeader,
-  Row
+  Row,
 } from "reactstrap";
 import { createType, updateType } from "../api/api";
 import { DATA_TYPES } from "../App";
 
-export const ListsModal = ({ list, setList, refreshLists }) => {
+export const ListsModal = ({ list, setList, tags, refreshLists }) => {
   const formRef = useRef();
 
   const onSubmit = () => {
@@ -24,6 +24,14 @@ export const ListsModal = ({ list, setList, refreshLists }) => {
 
     const listData = {
       title: formRef.current.title.value,
+
+      /* In HTML, the options of a select element are not an array (although 'array-like'),
+      and here the ... destructuring operator is used to coerce it into an array,
+      so we can iterate through it */
+      tags: [...formRef.current.tags.options].reduce(
+        (acc, opt) => (opt.selected ? [parseInt(opt.value), ...acc] : acc),
+        []
+      ),
       description: formRef.current.description.value,
       start_date: formRef.current.start_date.value || null,
       due_date: formRef.current.due_date.value || null,
@@ -49,17 +57,34 @@ export const ListsModal = ({ list, setList, refreshLists }) => {
       </ModalHeader>
       <ModalBody>
         <Form id={"form"} innerRef={formRef}>
-          <FormGroup>
-            <Label for="title">Title</Label>
-            <Input
-              type="text"
-              id="title"
-              name="title"
-              defaultValue={list?.title}
-              placeholder="Title"
-              required
-            />
-          </FormGroup>
+          <Row form>
+            <Col md={8}>
+              <FormGroup>
+                <Label for="title">Title</Label>
+                <Input
+                  type="text"
+                  id="title"
+                  name="title"
+                  defaultValue={list?.title}
+                  placeholder="Title"
+                  required
+                />
+              </FormGroup>
+            </Col>
+
+            <Col md={4}>
+              <FormGroup>
+                <Label for="tags">Tags</Label>
+                <Input type="select" multiple name="tags">
+                  {tags.map((tag) => (
+                    <option key={tag.id} value={tag.id} selected={list.tags.includes(tag.id)}>
+                      {tag.title}
+                    </option>
+                  ))}
+                </Input>
+              </FormGroup>
+            </Col>
+          </Row>
 
           <FormGroup>
             <Label for="description">Description</Label>
