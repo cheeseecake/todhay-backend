@@ -6,10 +6,8 @@ import {
   Button,
   Card,
   CardBody,
-  CardColumns,
-  CardSubtitle,
-  CardText,
-  CardTitle,
+  CardColumns, CardText,
+  CardTitle
 } from "reactstrap";
 import { deleteType } from "../api/api";
 import { DATA_TYPES } from "../App";

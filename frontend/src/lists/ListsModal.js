@@ -77,7 +77,14 @@ export const ListsModal = ({ list, setList, tags, refreshLists }) => {
                 <Label for="tags">Tags</Label>
                 <Input type="select" multiple name="tags">
                   {tags.map((tag) => (
-                    <option key={tag.id} value={tag.id} selected={list.tags.includes(tag.id)}>
+                    /* I think I figured it out: when there are tags, and you open the modal to
+                    create a new list, that list is initialized as the empty object {}, which has
+                    no 'tags' property, so you need the ?. null chaining operator ONLY after 'tags'. */
+                    <option
+                      key={tag.id}
+                      value={tag.id}
+                      selected={list.tags?.includes(tag.id)}
+                    >
                       {tag.title}
                     </option>
                   ))}
