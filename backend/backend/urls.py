@@ -18,11 +18,13 @@ from django.urls import path, include
 from rest_framework import routers
 from todos import views
 
-router = routers.SimpleRouter()
-router.register(r'todos', views.TodoView, 'todos')
-router.register(r'projects', views.ProjectView, 'projects')
-router.register(r'habits', views.HabitView, 'habits')
-router.register(r'wishlist', views.WishlistView, 'wishlist')
+# DefaultRouter allows you to see all the API routes at /api
+# Remove trailing slash at the end of route URLs for prettiness
+router = routers.DefaultRouter(trailing_slash=False)
+router.register('tags', views.TagViewSet)
+router.register('lists', views.ListViewSet)
+router.register('todos', views.TodoViewSet)
+router.register('wishlists', views.WishlistViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

@@ -1,94 +1,86 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
-
-from dateutil.relativedelta import relativedelta
-from django.utils import timezone
-from .models import Projects, Todos, Habits, Wishlist
+from datetime import date
 
 from rest_framework import viewsets
-from .serializers import TodoSerializer, ProjectSerializer, HabitSerializer, WishlistSerializer 
-        
-def refreshTodos():
-    print("refresh todos")
-    habits_list = Habits.objects.all()
-    Todos_list = Todos.objects.all()
-    completed_list = Todos_list.filter(completedate__isnull=False).order_by('completedate')
-    inprogress_list = Todos_list.filter(completedate__isnull=True).order_by('startdate','duedate')
-    for habit in habits_list:
-        exist = 0
-        prevstartdate = timezone.now()
-        prevduedate = timezone.now()
-        for inprogress in inprogress_list:
-            count = 0
-            if habit == inprogress.habit:
-                exist = exist +1
-            for completed in completed_list:
-                if habit == completed.habit:
-                    count = count + 1
-                    prevduedate = completed.duedate 
-                    prevstartdate = completed.startdate
-            frequency = habit.frequency
-        if exist == 0: #if it does not exist, create new Todo with new duedate
-            if frequency == 'Daily':
-                duedate = prevduedate + relativedelta(days = 1)
-                startdate = prevstartdate  + relativedelta(days = 1)
-            elif frequency == 'Weekly':
-                duedate = prevduedate + relativedelta(weeks = 1)
-                startdate = prevstartdate  + relativedelta(weeks = 1)
-            elif frequency == 'Monthly':
-                duedate = prevduedate+ relativedelta(months = 1)
-                startdate = prevstartdate  + relativedelta(months = 1)
-            elif frequency == 'Quarterly':
-                duedate = prevduedate + relativedelta(months = 3)
-                startdate = prevstartdate  + relativedelta(months = 3)
-            elif frequency == 'Yearly':
-                duedate = prevduedate + relativedelta(years = 1)
-                startdate = prevstartdate  + relativedelta(years = 1)
-            todo = Todos(
-                    title=habit.title,
-                    description = habit.description,
-                    effort = habit.effort,
-                    reward = habit.reward,
-                    habit = habit,
-                    startdate = startdate.strftime("%Y-%m-%d"),
-                    duedate=duedate.strftime("%Y-%m-%d"))
-            todo.save()
-            habit.save()
 
-# Create your views here.
-class ProjectView(viewsets.ModelViewSet):
-    serializer_class = ProjectSerializer
-    queryset = Projects.objects.all()
-    def perform_create(self, serializer):
-        serializer.save()
-    def perform_update(self, serializer):
-        serializer.save()
+from todos.models import FREQUENCIES, List, Tag, Todo, Wishlist
+from todos.serializers import (ListSerializer, TagSerializer, TodoSerializer,
+                         WishlistSerializer)
 
-class TodoView(viewsets.ModelViewSet):
+
+class TagViewSet(viewsets.ModelViewSet):
+    serializer_class = TagSerializer
+    queryset = Tag.objects.all()
+
+
+class ListViewSet(viewsets.ModelViewSet):
+    serializer_class = ListSerializer
+    queryset = List.objects.all()
+
+
+class TodoViewSet(viewsets.ModelViewSet):
     serializer_class = TodoSerializer
-    queryset = Todos.objects.all()
-    def perform_create(self, serializer):
-        serializer.save()
-    def perform_update(self, serializer):
-        serializer.save()
-        print(serializer)
-        refreshTodos()
+    queryset = Todo.objects.all()
 
-class HabitView(viewsets.ModelViewSet):
-    serializer_class = HabitSerializer
-    queryset = Habits.objects.all()
-    def perform_create(self, serializer):
-        serializer.save()
-        refreshTodos()
     def perform_update(self, serializer):
-        serializer.save()
+        # Get the todo that is going to be updated
+        old_todo = self.get_object()
 
-class WishlistView(viewsets.ModelViewSet):
+        # Perform the save at database level and get the updated object
+        new_todo = serializer.save()
+
+        # Check if completed_date was set in this update
+        original_completed_date = old_todo.completed_date
+        new_completed_date = new_todo.completed_date
+        was_todo_completed = bool(new_completed_date) and not bool(
+            original_completed_date)
+
+        # Now, we decide whether to create a recurring todo
+
+        # If completed_date wasn't toggled to have a value in this update,
+        # don't create the recurring todo
+        if not was_todo_completed:
+            return
+
+        # Check if task is recurring, using the value from the NEW todo
+        # (in case the user decided not to have a recurring task)
+        if new_todo.frequency is None:
+            return
+
+        # If end_date is set, and today is past the todo's end_date, don't create any more recurring todos
+        if new_todo.end_date and date.today() >= new_todo.end_date:
+            return
+
+        # Calculate the new due_date and start_date
+        relativedelta_to_add = FREQUENCIES[new_todo.frequency]
+        new_start_date = old_todo.start_date + relativedelta_to_add
+        new_due_date = new_start_date + relativedelta_to_add
+
+        # If end_date is set, and new_due_date is past the todo's end_date, don't create the recurring todo
+        if new_todo.end_date and new_due_date >= new_todo.end_date:
+            return
+
+        # Clone the incoming Todo and set due_date, start_date
+        # https://docs.djangoproject.com/en/3.2/topics/db/queries/#copying-model-instances
+        new_todo.pk = None
+        new_todo._state.adding = True
+        new_todo.due_date = new_due_date
+        new_todo.start_date = new_start_date
+        new_todo.completed_date = None
+
+        # If the recurring todo already exists, don't bother creating it
+        # We compare the List, title, description, due_date, start_date (that's probably enough)
+        if Todo.objects.filter(list=new_todo.list,
+                               title=new_todo.title,
+                               description=new_todo.description,
+                               due_date=new_todo.due_date,
+                               start_date=new_todo.start_date,
+                               completed_date=new_todo.completed_date).exists():
+            return
+
+        # All the checks have passed, now we create the todo
+        new_todo.save()
+
+
+class WishlistViewSet(viewsets.ModelViewSet):
     serializer_class = WishlistSerializer
-    queryset = Wishlist.objects.all() 
-    def perform_create(self, serializer):
-        serializer.save()
-    def perform_update(self, serializer):
-        serializer.save()
-
+    queryset = Wishlist.objects.all()
