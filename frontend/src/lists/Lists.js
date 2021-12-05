@@ -44,9 +44,15 @@ export const Lists = ({
     const totalPendingTodos = todos.filter(todo => !todo.completed_date && todo.list === list.id).length
 
     return (
+
       <Card
         key={list.id}
-        style={{ backgroundColor: "#E1F0C4", cursor: "pointer" }}
+        style={{ 
+          backgroundColor: 
+          list.due_date ? "#FBF2C0" : 
+          list.completed_date ?  "#E1F0C4"  :"#DCEDFF",
+          cursor: "pointer" 
+        }}
         onClick={() => setEditingList(list)}
       >
         <CardBody>
@@ -59,17 +65,17 @@ export const Lists = ({
 
           <CardText>
             {list.due_date
-              ? `Due ${formatDays(list.due_date)} (${format(
+              && `Due ${formatDays(list.due_date)} (${format(
                   parseISO(list.due_date),
                   "d MMM"
                 )})`
-              : "No due date"}
+                }
           </CardText>
           <CardText>
-            <FcMoneyTransfer /> Earned ${totalRewards}
+            <FcMoneyTransfer /> Earned ${totalRewards.toFixed(1)}
           </CardText>
           <CardText>
-            <FcClock /> Invested {totalEffort} hrs
+            <FcClock /> Invested {totalEffort.toFixed(1)} hrs
           </CardText>
 
           <div style={{ display: "flex", justifyContent: "space-around" }}>

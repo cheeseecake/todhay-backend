@@ -7,7 +7,7 @@ import {
 } from "date-fns";
 import format from "date-fns/format";
 import React, { useEffect, useState } from "react";
-import { Button, Input, Nav, Navbar, NavLink } from "reactstrap";
+import { Badge, Button, Input, Nav, Navbar, NavLink } from "reactstrap";
 import { patchType } from "../api/api";
 import { DATA_TYPES } from "../App";
 import { formatDays } from "../shared/util";
@@ -49,7 +49,10 @@ export const Todos = ({
   filteredTodos = filteredTodos.filter(
     (todo) => !!todo.completed_date === showCompleted
   );
-
+  // Sort todos based on descending completed_date, ascending due_date and start_date
+  filteredTodos = filteredTodos.sort((a, b) =>
+  new Date(b.completed_date) - new Date(a.completed_date) || new Date(a.due_date) - new Date(b.due_date) || new Date(a.start_date) - new Date(b.start_date)
+);
   return (
     <>
       {editingTodo && (
@@ -113,7 +116,7 @@ export const Todos = ({
                   {filteredTodos.reduce(
                     (acc, todo) => acc + parseFloat(todo.effort),
                     0
-                  )}{" "}
+                  ).toFixed(1)}{" "}
                   hrs)
                 </th>
                 <th>
@@ -121,7 +124,7 @@ export const Todos = ({
                   {filteredTodos.reduce(
                     (acc, todo) => acc + parseFloat(todo.reward),
                     0
-                  )}
+                  ).toFixed(1)}
                   )
                 </th>
                 <th>Start Date</th>
@@ -140,13 +143,12 @@ export const Todos = ({
                   ? formatDays(todo.due_date)
                   : "";
                 const isOverdue = new Date() > parseISO(todo.due_date);
-
+                const hasStarted = new Date() > parseISO(todo.start_date);
                 return (
                   <tr
                     key={todo.id}
                     style={{
-                      backgroundColor:
-                        todo.days_to_start <= 1 ? "#E8EBF7" : "white",
+                      backgroundColor: hasStarted ? "#E8EBF7" : "white",
                     }}
                   >
                     <td onClick={() => setEditingTodo(todo)}>
@@ -160,7 +162,13 @@ export const Todos = ({
                           fontStyle: "italic",
                         }}
                       >
-                        {todo.list.title}
+                      {lists.find((list) => list.id ===  todo.list)?.title}{" "}
+                      <Badge 
+                        style={{
+                          backgroundColor: "#597AB1"
+                      }}
+                      >{todo.frequency} 
+                      </Badge>
                       </span>
                     </td>
 
