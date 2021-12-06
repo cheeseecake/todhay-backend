@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import format from "date-fns/format";
 import {
   Button,
   Card,
@@ -16,7 +17,10 @@ export const Wishlist = ({ availableRewards, refreshWishlist, wishlist }) => {
   const [editingWish, setEditingWish] = useState();
 
   const redeemWish = (wish) =>
-    updateType({ ...wish, count: wish.count + 1 }, DATA_TYPES.WISHLIST)
+    updateType({ ...wish, 
+                  count: wish.count + 1, 
+                  last_purchased_date: format(new Date(), "yyyy-MM-dd") }, 
+                  DATA_TYPES.WISHLIST)
       .then(refreshWishlist)
       .catch(alert);
 

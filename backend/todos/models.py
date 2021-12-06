@@ -4,6 +4,8 @@ from datetime import date, timezone
 from dateutil.relativedelta import relativedelta
 from django.db import models
 
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 # Ordering of data is done client-side (https://stackoverflow.com/questions/43414603/array-sorting-in-front-end-or-back-end)
 
 # Setting frequencies as constants allows us to reference them as models.FREQUENCIES
@@ -20,7 +22,8 @@ FREQUENCIES = {
 class Tag(models.Model):
     """Can be set on Lists, e.g. 'Habit', 'Learning', 'Social', 'Work', or any combination of them"""
     title = models.TextField()
-
+    class Meta:
+        ordering = ['title']
 
 class Metadata(models.Model):
     """Common properties of List and Todo are grouped here"""
@@ -59,9 +62,8 @@ class List(Metadata):
                 continue
             todo.completed_date = date.today()
             todo.save()
-
-
-
+    class Meta:
+        ordering = ['title']
 
 class Todo(Metadata):
     list = models.ForeignKey(List, on_delete=models.CASCADE)
@@ -79,6 +81,14 @@ class Todo(Metadata):
     effort = models.DecimalField(max_digits=6, decimal_places=2, default=0.5)
     reward = models.DecimalField(max_digits=6, decimal_places=2, default=0.5)
 
+    def clean(self):
+        # Don't update todo if completed_date is before start_date
+        if self.completed_date:
+            if (self.completed_date < self.start_date):
+                raise ValidationError(_('Completed date must be after Start date.'))
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 class Wishlist(models.Model):
     title = models.TextField()
@@ -87,3 +97,4 @@ class Wishlist(models.Model):
     product_url = models.URLField(max_length=400, blank=True)
     count = models.IntegerField(default=0, null=True)
     repeat = models.BooleanField(default=False)
+    last_purchased_date = models.DateField(blank=True, null=True)

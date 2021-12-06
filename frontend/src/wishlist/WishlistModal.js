@@ -67,7 +67,7 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish }) => {
           </FormGroup>
 
           <Row form>
-            <Col md={6}>
+            <Col md={4}>
               <FormGroup>
                 <Label for="cost">Cost ($)</Label>
                 <Input
@@ -79,13 +79,23 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish }) => {
               </FormGroup>
             </Col>
 
-            <Col md={6}>
+            <Col md={4}>
               <FormGroup>
                 <Label for="type">Repeat?</Label>
                 <Input type="select" name="repeat" defaultValue={wish?.repeat}>
                   <option value={""}>false</option>
                   <option value={"true"}>true</option>
                 </Input>
+              </FormGroup>
+            </Col>
+            <Col md={4}>
+              <FormGroup>
+                <Label for="end_date">Last Purchased Date</Label>
+                <Input
+                  type="date"
+                  name="last_purchase_date"
+                  defaultValue={wish?.last_purchased_date}
+                />
               </FormGroup>
             </Col>
           </Row>
