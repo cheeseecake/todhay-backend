@@ -13,6 +13,8 @@ const fetchWithErrorHandling = (url, args) =>
       // to avoid throwing invalid JSON parse errors
       return r.status !== 204 && r.json();
     else {
+      // const html = await r.text()
+      // throw new Error(html)
       const json = await r.json();
       throw new Error(JSON.stringify(json, undefined, 2));
     }

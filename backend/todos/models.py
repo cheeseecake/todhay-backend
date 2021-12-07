@@ -5,7 +5,6 @@ from dateutil.relativedelta import relativedelta
 from django.db import models
 
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
 # Ordering of data is done client-side (https://stackoverflow.com/questions/43414603/array-sorting-in-front-end-or-back-end)
 
 # Setting frequencies as constants allows us to reference them as models.FREQUENCIES
@@ -72,7 +71,8 @@ class Todo(Metadata):
     frequency = models.CharField(max_length=20,
                                  choices=(map(lambda x: (x, x), FREQUENCIES.keys())),
                                  default=None,
-                                 null=True)
+                                 null=True,
+                                 blank=True)
 
     # I'm guessing this is the date after which the task should stop recurring
     # If end_date is None and frequency is set, the task recurs forever
@@ -83,9 +83,8 @@ class Todo(Metadata):
 
     def clean(self):
         # Don't update todo if completed_date is before start_date
-        if self.completed_date:
-            if (self.completed_date < self.start_date):
-                raise ValidationError(_('Completed date must be after Start date.'))
+        if self.completed_date and (self.completed_date < self.start_date):
+            raise ValidationError('completed_date must be after start_date.')
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
