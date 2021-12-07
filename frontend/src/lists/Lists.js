@@ -67,7 +67,7 @@ export const Lists = ({
             {list.due_date
               && `Due ${formatDays(list.due_date)} (${format(
                   parseISO(list.due_date),
-                  "d MMM"
+                  "d MMM yy"
                 )})`
                 }
           </CardText>

@@ -175,11 +175,11 @@ export const Todos = ({
                     <td>{formattedEffortHours}</td>
                     <td>${todo.reward}</td>
                     <td>
-                      {todo.start_date} <br />
+                      {format(parseISO(todo.start_date),"d MMM yy")} <br />
                       <b style={{ fontSize: "80%" }}>{formattedStartDate}</b>
                     </td>
                     <td>
-                      {todo.due_date || "None"} <br />
+                      {format(parseISO(todo.due_date),"d MMM yy") || "None"} <br />
                       <b
                         style={{
                           fontSize: "80%",

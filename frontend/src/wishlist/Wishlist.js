@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import format from "date-fns/format";
+import { format, parseISO } from "date-fns";
+import { formatDays } from "../shared/util";
 import {
   Button,
   Card,
@@ -59,10 +60,12 @@ export const Wishlist = ({ availableRewards, refreshWishlist, wishlist }) => {
           <CardTitle tag="h5">
             {wish.title} x{wish?.count}
           </CardTitle>
-          <CardText tag="h6" className="mb-2 text-muted">
-            ${wish.cost}{" "}
+          <CardText>
+          {wish.last_purchased_date
+              && `Purchased ${formatDays(wish.last_purchased_date)}`
+                }
           </CardText>
-
+          <CardText>
           {isWishRedeemable && (
             <Button
               color="success"
@@ -75,6 +78,8 @@ export const Wishlist = ({ availableRewards, refreshWishlist, wishlist }) => {
               Redeem
             </Button>
           )}
+          {" "}${wish.cost}
+          </CardText>
         </CardBody>
       </Card>
     );
