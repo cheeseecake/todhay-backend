@@ -7,6 +7,7 @@ import {
 } from "date-fns";
 import format from "date-fns/format";
 import React, { useEffect, useState } from "react";
+import Select from "react-select";
 import { Badge, Button, Input, Nav, Navbar, NavLink } from "reactstrap";
 import { patchType } from "../api/api";
 import { DATA_TYPES } from "../App";
@@ -14,6 +15,7 @@ import { formatDays } from "../shared/util";
 import { TodosModal } from "./TodosModal";
 
 export const Todos = ({
+  tags,
   lists,
   refreshTodos,
   selectedListId,
@@ -21,6 +23,7 @@ export const Todos = ({
   todos,
 }) => {
   const [editingTodo, setEditingTodo] = useState();
+  const [selectedTags, setSelectedTags] = useState([]);
 
   // Whether to show only completed todos
   // Note: This also determines whether the 'Completed' tab is
@@ -35,6 +38,13 @@ export const Todos = ({
       { ...todo, completed_date: format(new Date(), "yyyy-MM-dd") },
       DATA_TYPES.TODOS
     ).then(refreshTodos);
+    
+  // Filter list selection by tag if a tag was selected from autocomplete field,
+  // or if no tag was selected show everything
+  let filteredLists = selectedTags.length > 0
+    ? lists
+    .filter((list) => list.tags.some(tag => selectedTags.includes(tag)))
+  : lists;
 
   // Filter todos by list if a list was selected from dropdown,
   // or if no list was selected show everything
@@ -43,16 +53,25 @@ export const Todos = ({
         .filter((todo) => todo.list === selectedListId)
         .filter((todo) => !!todo.completed_date === showCompleted)
     : todos;
-
+  // Further filter depending on tagsFilter
+  filteredTodos = selectedTags.length > 0
+  ? filteredTodos
+      .filter((todo) => filteredLists.map((list) => list.id).includes(todo.list))
+      .filter((todo) => !!todo.completed_date === showCompleted)
+  : filteredTodos;
   // Further filter depending on showCompleted
   // '!!' coerces the operand to a boolean value
   filteredTodos = filteredTodos.filter(
     (todo) => !!todo.completed_date === showCompleted
   );
+
   // Sort todos based on descending completed_date, ascending due_date and start_date
   filteredTodos = filteredTodos.sort((a, b) =>
-  new Date(b.completed_date) - new Date(a.completed_date) || new Date(a.due_date) - new Date(b.due_date) || new Date(a.start_date) - new Date(b.start_date)
-);
+    new Date(b.completed_date) - new Date(a.completed_date) 
+    || new Date(a.due_date) - new Date(b.due_date) 
+    || new Date(a.start_date) - new Date(b.start_date)
+  );
+
   return (
     <>
       {editingTodo && (
@@ -64,6 +83,13 @@ export const Todos = ({
         />
       )}
       <div>
+      <Select
+        name="tags"
+        placeholder="All Tags"
+        isMulti              
+        options={tags.map((tag) => ({value: tag.id, label: tag.title}))}
+        onChange = {(e) => setSelectedTags(e.map((tag) => tag.value))}
+      />
         <Navbar expand="md" bg="dark" variant="light">
           <Nav className="mr-auto" tabs>
             <NavLink>
@@ -74,7 +100,7 @@ export const Todos = ({
                 onChange={(e) => setSelectedListId(e.target.value)}
               >
                 <option value={""}>All</option>
-                {lists.map((list) => (
+                {filteredLists.map((list) => (
                   <option key={list.id} value={list.id}>
                     {list.title}
                   </option>

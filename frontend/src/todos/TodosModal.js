@@ -150,6 +150,7 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
           <FormGroup>
             <Label for="description">Description</Label>
             <Input
+              style={{height: "150px"}}
               type="textarea"
               id="description"
               name="description"

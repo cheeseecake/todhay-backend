@@ -99,6 +99,7 @@ export const App = () => {
     [DATA_TYPES.TODOS.apiName]: (
       <Todos
         lists={lists}
+        tags={tags}
         refreshTodos={refreshTodos}
         selectedListId={selectedListId}
         setSelectedListId={setSelectedListId}

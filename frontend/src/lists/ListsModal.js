@@ -1,5 +1,6 @@
 import format from "date-fns/format";
 import React, { useRef } from "react";
+import Select from "react-select";
 import {
   Button,
   Col,
@@ -24,14 +25,15 @@ export const ListsModal = ({ list, setList, tags, refreshLists }) => {
 
     const listData = {
       title: formRef.current.title.value,
-
       /* In HTML, the options of a select element are not an array (although 'array-like'),
       and here the ... destructuring operator is used to coerce it into an array,
       so we can iterate through it */
-      tags: [...formRef.current.tags.options].reduce(
-        (acc, opt) => (opt.selected ? [parseInt(opt.value), ...acc] : acc),
-        []
-      ),
+      tags: formRef.current.tags.length > 1
+      ? Array.from(formRef.current.tags, (tag) => parseInt(tag.value))
+      : formRef.current.tags.value
+         ? [parseInt(formRef.current.tags.value)]
+         : []
+      ,
       description: formRef.current.description.value,
       start_date: formRef.current.start_date.value || null,
       due_date: formRef.current.due_date.value || null,
@@ -58,7 +60,7 @@ export const ListsModal = ({ list, setList, tags, refreshLists }) => {
       <ModalBody>
         <Form id={"form"} innerRef={formRef}>
           <Row form>
-            <Col md={8}>
+            <Col md={6}>
               <FormGroup>
                 <Label for="title">Title</Label>
                 <Input
@@ -66,29 +68,26 @@ export const ListsModal = ({ list, setList, tags, refreshLists }) => {
                   id="title"
                   name="title"
                   defaultValue={list?.title}
-                  placeholder="Title"
+                  placeholder="Title" 
                   required
                 />
               </FormGroup>
             </Col>
 
-            <Col md={4}>
+            <Col md={6}>
               <FormGroup>
-                <Label for="tags">Tags</Label>
-                <Input type="select" multiple name="tags">
-                  {tags.map((tag) => (
-                    /* I think I figured it out: when there are tags, and you open the modal to
-                    create a new list, that list is initialized as the empty object {}, which has
-                    no 'tags' property, so you need the ?. null chaining operator ONLY after 'tags'. */
-                    <option
-                      key={tag.id}
-                      value={tag.id}
-                      selected={list.tags?.includes(tag.id)}
-                    >
-                      {tag.title}
-                    </option>
-                  ))}
-                </Input>
+              <Label for="tags">Tags</Label>
+              <Select
+                name="tags"
+                placeholder="Tags"
+                closeMenuOnSelect={false}
+                isMulti
+                defaultValue={tags
+                  .filter((tag) => list.tags?.includes(tag.id))
+                  .map((tag) => ({value: tag.id, label: tag.title}))}                
+                options={tags
+                  .map((tag) => ({value: tag.id, label: tag.title}))}
+              />
               </FormGroup>
             </Col>
           </Row>

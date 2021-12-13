@@ -90,7 +90,7 @@ class TodoViewSet(viewsets.ModelViewSet):
         next_todo=Todo(
                 list=updated_todo.list,
                 frequency=updated_todo.frequency,
-                title=updated_todo.title,
+                title=original_todo.title,
                 effort=updated_todo.effort,
                 reward=updated_todo.reward,
                 start_date=new_start_date,

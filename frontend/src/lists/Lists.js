@@ -9,6 +9,7 @@ import {
   CardColumns, CardText,
   CardTitle
 } from "reactstrap";
+import Select from "react-select";
 import { deleteType } from "../api/api";
 import { DATA_TYPES } from "../App";
 import { formatDays } from "../shared/util";
@@ -22,12 +23,20 @@ export const Lists = ({
   viewTodosFromListId,
 }) => {
   const [editingList, setEditingList] = useState();
+  const [selectedTags, setSelectedTags] = useState([]);
 
   const onDelete = (list) =>
     window.confirm(`Are you sure you want to delete '${list.title}'?`) &&
     deleteType(list, DATA_TYPES.LISTS).then(refreshLists);
 
-  const cards = lists.map((list) => {
+    // Filter list selection by tag if a tag was selected from autocomplete field,
+    // or if no tag was selected show everything
+    let filteredLists = selectedTags.length > 0
+      ? lists
+      .filter((list) => list.tags.some(tag => selectedTags.includes(tag)))
+    : lists;
+
+  const cards = filteredLists.map((list) => {
     // Only count completed todos in calculating effort and earnings
     const completedTodosInList = todos.filter(
       (todo) => todo.list === list.id && !!todo.completed_date
@@ -105,9 +114,19 @@ export const Lists = ({
 
   return (
     <>
-      <Button color="info" onClick={() => setEditingList({})}>
+      <div style={{ display: "flex" , gap: "10px"}}> 
+      <Button color="info" onClick={() => setEditingList({})} >
         Add list
       </Button>
+      <div style={{ flex: "1"}}>
+      <Select  
+        name="tags"
+        placeholder="All Tags"
+        isMulti              
+        options={tags.map((tag) => ({value: tag.id, label: tag.title}))}
+        onChange = {(e) => setSelectedTags(e.map((tag) => tag.value))}
+      />
+      </div></div>
       <div style={{ padding: "20px" }}>
         {editingList && (
           <ListsModal
