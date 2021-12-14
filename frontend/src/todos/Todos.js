@@ -1,9 +1,6 @@
 import {
   formatDuration,
-  intervalToDuration,
-  formatDistanceToNow,
-  parseJSON,
-  parseISO,
+  intervalToDuration, parseISO
 } from "date-fns";
 import format from "date-fns/format";
 import React, { useEffect, useState } from "react";
@@ -38,38 +35,38 @@ export const Todos = ({
       { ...todo, completed_date: format(new Date(), "yyyy-MM-dd") },
       DATA_TYPES.TODOS
     ).then(refreshTodos);
-    
+
   // Filter list selection by tag if a tag was selected from autocomplete field,
   // or if no tag was selected show everything
-  let filteredLists = selectedTags.length > 0
-    ? lists
-    .filter((list) => list.tags.some(tag => selectedTags.includes(tag)))
-  : lists;
+  let filteredLists =
+    selectedTags.length > 0
+      ? lists.filter((list) =>
+          list.tags.some((tag) => selectedTags.includes(tag))
+        )
+      : lists;
 
-  // Filter todos by list if a list was selected from dropdown,
-  // or if no list was selected show everything
+  // Filter todos by list if a list was selected from dropdown
   let filteredTodos = selectedListId
-    ? todos
-        .filter((todo) => todo.list === selectedListId)
-        .filter((todo) => !!todo.completed_date === showCompleted)
+    ? todos.filter((todo) => todo.list === selectedListId)
     : todos;
-  // Further filter depending on tagsFilter
-  filteredTodos = selectedTags.length > 0
-  ? filteredTodos
-      .filter((todo) => filteredLists.map((list) => list.id).includes(todo.list))
-      .filter((todo) => !!todo.completed_date === showCompleted)
-  : filteredTodos;
-  // Further filter depending on showCompleted
-  // '!!' coerces the operand to a boolean value
+
+  // Further filter todos depending on tagsFilter
+  if (selectedTags.length > 0)
+    filteredTodos = filteredTodos.filter((todo) =>
+      filteredLists.map((list) => list.id).includes(todo.list)
+    );
+
+  // Finally, filter depending whether the user is viewing only completed todos or not
   filteredTodos = filteredTodos.filter(
     (todo) => !!todo.completed_date === showCompleted
   );
 
   // Sort todos based on descending completed_date, ascending due_date and start_date
-  filteredTodos = filteredTodos.sort((a, b) =>
-    new Date(b.completed_date) - new Date(a.completed_date) 
-    || new Date(a.due_date) - new Date(b.due_date) 
-    || new Date(a.start_date) - new Date(b.start_date)
+  filteredTodos = filteredTodos.sort(
+    (a, b) =>
+      new Date(b.completed_date) - new Date(a.completed_date) ||
+      new Date(a.due_date) - new Date(b.due_date) ||
+      new Date(a.start_date) - new Date(b.start_date)
   );
 
   return (
@@ -83,13 +80,13 @@ export const Todos = ({
         />
       )}
       <div>
-      <Select
-        name="tags"
-        placeholder="All Tags"
-        isMulti              
-        options={tags.map((tag) => ({value: tag.id, label: tag.title}))}
-        onChange = {(e) => setSelectedTags(e.map((tag) => tag.value))}
-      />
+        <Select
+          name="tags"
+          placeholder="All Tags"
+          isMulti
+          options={tags.map((tag) => ({ value: tag.id, label: tag.title }))}
+          onChange={(e) => setSelectedTags(e.map((tag) => tag.value))}
+        />
         <Navbar expand="md" bg="dark" variant="light">
           <Nav className="mr-auto" tabs>
             <NavLink>
@@ -139,18 +136,16 @@ export const Todos = ({
                 <th>Title ({filteredTodos.length})</th>
                 <th>
                   Effort (
-                  {filteredTodos.reduce(
-                    (acc, todo) => acc + parseFloat(todo.effort),
-                    0
-                  ).toFixed(1)}{" "}
+                  {filteredTodos
+                    .reduce((acc, todo) => acc + parseFloat(todo.effort), 0)
+                    .toFixed(1)}{" "}
                   hrs)
                 </th>
                 <th>
                   Rewards ($
-                  {filteredTodos.reduce(
-                    (acc, todo) => acc + parseFloat(todo.reward),
-                    0
-                  ).toFixed(1)}
+                  {filteredTodos
+                    .reduce((acc, todo) => acc + parseFloat(todo.reward), 0)
+                    .toFixed(1)}
                   )
                 </th>
                 <th>Start Date</th>
@@ -188,24 +183,28 @@ export const Todos = ({
                           fontStyle: "italic",
                         }}
                       >
-                      {lists.find((list) => list.id ===  todo.list)?.title}{" "}
-                      <Badge 
-                        style={{
-                          backgroundColor: "#597AB1"
-                      }}
-                      >{todo.frequency} 
-                      </Badge>
+                        {lists.find((list) => list.id === todo.list)?.title}{" "}
+                        <Badge
+                          style={{
+                            backgroundColor: "#597AB1",
+                          }}
+                        >
+                          {todo.frequency}
+                        </Badge>
                       </span>
                     </td>
 
                     <td>{formattedEffortHours}</td>
                     <td>${todo.reward}</td>
                     <td>
-                      {format(parseISO(todo.start_date),"d MMM yy")} <br />
+                      {format(parseISO(todo.start_date), "d MMM yy")} <br />
                       <b style={{ fontSize: "80%" }}>{formattedStartDate}</b>
                     </td>
                     <td>
-                      {format(parseISO(todo.due_date),"d MMM yy") || "None"} <br />
+                      {todo.due_date
+                        ? format(parseISO(todo.due_date), "d MMM yy")
+                        : "None"}{" "}
+                      <br />
                       <b
                         style={{
                           fontSize: "80%",

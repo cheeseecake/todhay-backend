@@ -26,6 +26,7 @@
   - `net stop winnat`
   - `net start winnat`
   - Restart the docker containers: `docker compose up`
+- If you get `OCI runtime create failed` errors, make sure you've run `npm i` in the `./frontend` folder, and re-run Docker with `docker compose up --force-recreate`.
 
 ## Issues
 
