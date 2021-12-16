@@ -8,6 +8,10 @@
   - Ensure you have the latest version of `npm` available on your system
   - `cd frontend`
   - `npm ci`
+- Make and execute Django migrations:
+  - `cd backend`
+  - `python manage.py makemigrations`
+  - `python manage.py migrate`
 - Build docker-compose images:
   - `docker compose build`
 - Run:
@@ -27,6 +31,12 @@
   - `net start winnat`
   - Restart the docker containers: `docker compose up`
 - If you get `OCI runtime create failed` errors, make sure you've run `npm i` in the `./frontend` folder, and re-run Docker with `docker compose up --force-recreate`.
+
+## Updating dependencies
+
+- Backend: Run `pip list --outdated`, then modify `requirements.txt` accordingly
+- Frontend: Run `npm outdated`, then `npm update` to update *non-breaking* packages, followed by `npm i <package-name>` to update potentially breaking packages
+- Remember to check and fix breaking issues!
 
 ## Issues
 
