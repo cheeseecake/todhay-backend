@@ -1,6 +1,5 @@
+import { format } from "date-fns";
 import React, { useState } from "react";
-import { format, parseISO } from "date-fns";
-import { formatDays } from "../shared/util";
 import {
   Button,
   Card,
@@ -8,10 +7,11 @@ import {
   CardColumns,
   CardImg,
   CardText,
-  CardTitle,
+  CardTitle
 } from "reactstrap";
 import { updateType } from "../api/api";
 import { DATA_TYPES } from "../App";
+import { formatDays } from "../shared/util";
 import { WishlistModal } from "./WishlistModal";
 
 export const Wishlist = ({ availableRewards, refreshWishlist, wishlist }) => {

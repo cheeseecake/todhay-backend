@@ -27,7 +27,7 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish }) => {
       repeat: !!formRef.current.repeat.value,
       img_url: formRef.current.img_url.value,
       product_url: formRef.current.product_url.value,
-      last_purchased_date: formRef.current.last_purchased_date.value,
+      last_purchased_date: formRef.current.last_purchased_date.value || null,
     };
 
     const operation = id
