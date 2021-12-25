@@ -1,17 +1,8 @@
 import { format, parseISO } from "date-fns";
 import React, { useState } from "react";
-import { FcClock, FcMoneyTransfer } from "react-icons/fc";
-import {
-  Badge,
-  Button,
-  Card,
-  CardBody,
-  CardColumns, CardText,
-  CardTitle
-} from "reactstrap";
+import { FcTodoList, FcClock, FcMoneyTransfer } from "react-icons/fc";
+import { Badge, Button, Card, Row, Col, Form } from "react-bootstrap";
 import Select from "react-select";
-import { deleteType } from "../api/api";
-import { DATA_TYPES } from "../App";
 import { formatDays } from "../shared/util";
 import { ListsModal } from "./ListsModal";
 
@@ -25,16 +16,24 @@ export const Lists = ({
   const [editingList, setEditingList] = useState();
   const [selectedTags, setSelectedTags] = useState([]);
 
-  const onDelete = (list) =>
-    window.confirm(`Are you sure you want to delete '${list.title}'?`) &&
-    deleteType(list, DATA_TYPES.LISTS).then(refreshLists);
+  const [showHabits, setShowHabits] = useState(false);
 
-    // Filter list selection by tag if a tag was selected from autocomplete field,
-    // or if no tag was selected show everything
-    let filteredLists = selectedTags.length > 0
-      ? lists
+  // Filter list selection by tag if a tag was selected from autocomplete field,
+  // or if no tag was selected show everything
+  let filteredLists = selectedTags.length > 0
+    ? lists
       .filter((list) => list.tags.some(tag => selectedTags.includes(tag)))
     : lists;
+
+  // Further filter lists depending on whether list has a due date
+  if (showHabits)
+    filteredLists = filteredLists.filter((list) => !list.due_date);
+
+  // Sort list by due date
+  filteredLists = filteredLists.sort(
+    (a, b) =>
+      new Date(a.due_date) - new Date(b.due_date)
+  );
 
   const cards = filteredLists.map((list) => {
     // Only count completed todos in calculating effort and earnings
@@ -54,90 +53,95 @@ export const Lists = ({
 
     return (
 
-      <Card
-        key={list.id}
-        style={{ 
-          backgroundColor: 
-          list.due_date ? "#FBF2C0" : 
-          list.completed_date ?  "#E1F0C4"  :"#DCEDFF",
-          cursor: "pointer" 
-        }}
-        onClick={() => setEditingList(list)}
-      >
-        <CardBody>
-          <div>
-            {list.tags.map(id => (
-              <Badge pill key={id} style={{margin: '5px 5px 5px 0'}}>{tags.find(tag => tag.id === id).title}</Badge>
-            ))}
-          </div>
-          <CardTitle tag="h5">{list.title} ({totalPendingTodos} todo{totalPendingTodos !== 1 && 's'})</CardTitle>
-
-          <CardText>
-            {list.due_date
-              && `Due ${formatDays(list.due_date)} (${format(
+      <Col key={list.id}>
+        <Card
+          key={list.id}
+          style={{
+            backgroundColor:
+              list.due_date ? "#E0EBF5" :
+                list.completed_date ? "#EFFAF5" : "#E4EFF1",
+          }}
+        >
+          <Card.Body
+            style={{ cursor: "pointer" }}
+            onClick={() => setEditingList(list)}
+          >
+            <Card.Title tag="h5">{list.title}</Card.Title>
+            <Card.Subtitle className="subtitle">
+              {list.due_date
+                && `Due ${formatDays(list.due_date)} (${format(
                   parseISO(list.due_date),
                   "d MMM yy"
                 )})`
-                }
-          </CardText>
-          <CardText>
-            <FcMoneyTransfer /> Earned ${totalRewards.toFixed(1)}
-          </CardText>
-          <CardText>
-            <FcClock /> Invested {totalEffort.toFixed(1)} hrs
-          </CardText>
-
-          <div style={{ display: "flex", justifyContent: "space-around" }}>
+              }
+            </Card.Subtitle>
+            <Card.Text style={{ fontSize: "80%" }}>
+              Completed{" "}
+              <FcTodoList /> {completedTodosInList.length} todos{" "}
+              <FcMoneyTransfer /> ${totalRewards.toFixed(1)}{" "}
+              <FcClock /> {totalEffort.toFixed(1)} hrs
+            </Card.Text>
+            <Card.Text>
+              {list.tags.map(id => (
+                <Badge pill key={id}
+                  bg={tags.find(tag => tag.id === id).topic ? "dark" : "light"}
+                  text={tags.find(tag => tag.id === id).topic ? "light" : "dark"}
+                  style={{ margin: '5px 5px 5px 0' }}>
+                  {tags.find(tag => tag.id === id).title}
+                </Badge>
+              ))}
+            </Card.Text>
+          </Card.Body>
+          <Card.Footer>
             <Button
-              color="primary"
+              variant="primary"
               onClick={(e) => {
                 e.stopPropagation();
                 viewTodosFromListId(list.id);
               }}
             >
-              View/Add todos
+              View todos ({totalPendingTodos})
             </Button>
-
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(list);
-              }}
-            >
-              Delete
-            </Button>
-          </div>
-        </CardBody>
-      </Card>
+          </Card.Footer>
+        </Card>
+      </Col>
     );
   });
 
   return (
     <>
-      <div style={{ display: "flex" , gap: "10px"}}> 
-      <Button color="info" onClick={() => setEditingList({})} >
-        Add list
-      </Button>
-      <div style={{ flex: "1"}}>
-      <Select  
-        name="tags"
-        placeholder="All Tags"
-        isMulti              
-        options={tags.map((tag) => ({value: tag.id, label: tag.title}))}
-        onChange = {(e) => setSelectedTags(e.map((tag) => tag.value))}
-      />
-      </div></div>
-      <div style={{ padding: "20px" }}>
-        {editingList && (
-          <ListsModal
-            list={editingList}
-            setList={setEditingList}
-            tags={tags}
-            refreshLists={refreshLists}
+      <Row>
+        <Col>
+          <Select
+            name="tags"
+            placeholder="All Tags"
+            isMulti
+            options={tags.map((tag) => ({ value: tag.id, label: tag.title }))}
+            onChange={(e) => setSelectedTags(e.map((tag) => tag.value))}
           />
-        )}
-        <CardColumns style={{ columnCount: "4" }}>{cards}</CardColumns>
-      </div>
+        </Col>
+        <Col md="auto">
+          <Button color="info" onClick={() => setEditingList({})} >
+            Add list
+          </Button>
+        </Col>
+      </Row>
+      <Form.Check
+        type="checkbox"
+        label="Habits Only"
+        onChange={(e) => { setShowHabits(e.target.checked) }}
+      /><br />
+      {editingList && (
+        <ListsModal
+          list={editingList}
+          setList={setEditingList}
+          tags={tags}
+          refreshLists={refreshLists}
+        />
+      )}
+      <Row xs={1} md={3} lg={5} className="g-3">
+        {cards}
+      </Row>
     </>
   );
 };

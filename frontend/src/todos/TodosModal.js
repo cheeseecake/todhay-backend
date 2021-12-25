@@ -1,17 +1,5 @@
 import React, { useRef, useState } from "react";
-import {
-  Button,
-  Col,
-  Form,
-  FormGroup,
-  Input,
-  Label,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-  Row,
-} from "reactstrap";
+import { Button, Row, Col, Form, Modal } from "react-bootstrap";
 import { updateType, createType, deleteType } from "../api/api";
 import { DATA_TYPES } from "../App";
 import { format } from "date-fns";
@@ -58,17 +46,17 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
     });
 
   return (
-    <Modal isOpen toggle={() => setTodo(null)} className="modal-lg">
-      <ModalHeader>
+    <Modal show onHide={() => setTodo(null)} size="lg" backdrop="static">
+      <Modal.Header closeButton>
         /{DATA_TYPES.TODOS.apiName}/{todo?.id || "<New Todo>"}
-      </ModalHeader>
-      <ModalBody>
-        <Form id={"form"} innerRef={formRef}>
+      </Modal.Header>
+      <Modal.Body>
+        <Form id={"form"} ref={formRef}>
           <Row form>
             <Col md={8}>
-              <FormGroup>
-                <Label for="title">Title</Label>
-                <Input
+              <Form.Group>
+                <Form.Label for="title">Title</Form.Label>
+                <Form.Control
                   type="text"
                   id="title"
                   name="title"
@@ -76,52 +64,51 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
                   placeholder="Title"
                   required
                 />
-              </FormGroup>
+              </Form.Group>
             </Col>
             <Col md={4}>
-              <FormGroup>
-                <Label for={"list"}>List</Label>
-                <Input type="select" name="list" defaultValue={todo?.list}>
+              <Form.Group>
+                <Form.Label for={"list"}>List</Form.Label>
+                <Form.Select name="list" defaultValue={todo?.list}>
                   {lists.map((e) => (
                     <option key={e.id} value={e.id}>
                       {e.title}
                     </option>
                   ))}
-                </Input>
-              </FormGroup>
+                </Form.Select >
+              </Form.Group>
             </Col>
           </Row>
 
           <Row form>
             <Col md={6}>
-              <FormGroup>
-                <Label for="effort">Effort (hrs) - {effort * 60} minutes</Label>
-                <Input
+              <Form.Group>
+                <Form.Label for="effort">Effort (hrs) - {effort * 60} minutes</Form.Label>
+                <Form.Control
                   type="integer"
                   name="effort"
                   value={effort}
                   onChange={(e) => setEffort(e.target.value)}
                 />
-              </FormGroup>
+              </Form.Group>
             </Col>
             <Col md={6}>
-              <FormGroup>
-                <Label for="reward">Reward ($) - recommended ${effort}</Label>
-                <Input
+              <Form.Group>
+                <Form.Label for="reward">Reward ($) - recommended ${effort}</Form.Label>
+                <Form.Control
                   type="integer"
                   name="reward"
                   defaultValue={todo?.reward || 0.5}
                 />
-              </FormGroup>
+              </Form.Group>
             </Col>
           </Row>
 
           <Row form>
             <Col md={6}>
-              <FormGroup>
-                <Label for="frequency">Frequency</Label>
-                <Input
-                  type="select"
+              <Form.Group>
+                <Form.Label for="frequency">Frequency</Form.Label>
+                <Form.Select
                   name="frequency"
                   defaultValue={todo?.frequency}
                 >
@@ -131,39 +118,39 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
                   <option value={"MONTHLY"}>Monthly</option>
                   <option value={"QUATERLY"}>Quarterly</option>
                   <option value={"YEARLY"}>Yearly</option>
-                </Input>
-              </FormGroup>
+                </Form.Select>
+              </Form.Group>
             </Col>
 
             <Col md={6}>
-              <FormGroup>
-                <Label for="end_date">End Date</Label>
-                <Input
+              <Form.Group>
+                <Form.Label for="end_date">End Date</Form.Label>
+                <Form.Control
                   type="date"
                   name="end_date"
                   defaultValue={todo?.end_date}
                 />
-              </FormGroup>
+              </Form.Group>
             </Col>
           </Row>
-
-          <FormGroup>
-            <Label for="description">Description</Label>
-            <Input
-              style={{height: "150px"}}
-              type="textarea"
-              id="description"
-              name="description"
-              defaultValue={todo?.description}
-              placeholder="Description"
-            />
-          </FormGroup>
-
-          <Row form>
+          <Row>
+            <Form.Group>
+              <Form.Label for="description">Description</Form.Label>
+              <Form.Control
+                style={{ height: "150px" }}
+                type="textarea"
+                id="description"
+                name="description"
+                defaultValue={todo?.description}
+                placeholder="Description"
+              />
+            </Form.Group>
+          </Row>
+          <Row>
             <Col md={4}>
-              <FormGroup>
-                <Label for="start_date">Start Date</Label>
-                <Input
+              <Form.Group>
+                <Form.Label for="start_date">Start Date</Form.Label>
+                <Form.Control
                   type="date"
                   id="start_date"
                   name="start_date"
@@ -171,39 +158,37 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
                     todo?.start_date || format(new Date(), "yyyy-MM-dd")
                   }
                 />
-              </FormGroup>
+              </Form.Group>
             </Col>
             <Col md={4}>
-              <FormGroup>
-                <Label for="due_date">Due Date</Label>
-                <Input
+              <Form.Group>
+                <Form.Label for="due_date">Due Date</Form.Label>
+                <Form.Control
                   type="date"
                   id="due_date"
                   name="due_date"
                   defaultValue={todo?.due_date}
                 />
-              </FormGroup>
+              </Form.Group>
             </Col>
             <Col md={4}>
-              <FormGroup>
-                <Label for="completed_date">Completed Date</Label>
-                <Input
+              <Form.Group>
+                <Form.Label for="completed_date">Completed Date</Form.Label>
+                <Form.Control
                   type="date"
                   id="completed_date"
                   name="completed_date"
                   defaultValue={todo?.completed_date}
                 />
-              </FormGroup>
+              </Form.Group>
             </Col>
           </Row>
         </Form>
-      </ModalBody>
-      <ModalFooter>
-        <Button onClick={onDelete}>Delete</Button>
-        <Button color="primary" onClick={onSubmit}>
-          Save
-        </Button>
-      </ModalFooter>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="dark" onClick={onDelete}>Delete</Button>{' '}
+        <Button variant="success" onClick={onSubmit}>Save</Button>{' '}
+      </Modal.Footer>
     </Modal>
   );
 };

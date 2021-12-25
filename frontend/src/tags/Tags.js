@@ -1,17 +1,17 @@
 import { useState } from "react";
 import React from "react";
-import {
-  Button,
-  Card,
-  CardBody,
-  CardColumns,
-  CardText,
-  CardTitle,
-} from "reactstrap";
+import { Button, Card, Row, Col } from "react-bootstrap";
 import { TagsModal } from "./TagsModal";
 
 export const Tags = ({ refreshTags, tags, lists, todos }) => {
   const [editingTag, setEditingTag] = useState();
+
+  // Sort tags by topic, title
+  tags = tags.sort(
+    (a, b) =>
+      a.topic - b.topic ||
+      a.title - b.title
+  );
 
   const cards = tags.map((tag) => {
     const listsWithTag = lists.filter((list) => list.tags.includes(tag.id));
@@ -21,24 +21,27 @@ export const Tags = ({ refreshTags, tags, lists, todos }) => {
     ).length;
 
     return (
-      <Card
-        key={tag.id}
-        onClick={() => setEditingTag(tag)}
-        style={{ cursor: "pointer" }}
-      >
-        <CardBody>
-          <CardTitle tag="h5">{tag.title}</CardTitle>
-          <CardText tag="h6" className="mb-2 text-muted">
-            {numLists} list{numLists !== 1 && 's'} ({numPendingTodos} todo{numPendingTodos !== 1 && 's'})
-          </CardText>
-        </CardBody>
-      </Card>
+      <Col key={tag.id}>
+        <Card
+          onClick={() => setEditingTag(tag)}
+          bg={tag.topic ? "dark" : "light"}
+          text={tag.topic ? "light" : "dark"}
+          style={{ cursor: "pointer" }}
+        >
+          <Card.Body>
+            <Card.Title tag="h5">{tag.title}</Card.Title>
+            <Card.Text>
+              {numLists} list{numLists !== 1 && 's'} ({numPendingTodos} todo{numPendingTodos !== 1 && 's'})
+            </Card.Text>
+          </Card.Body>
+        </Card>
+      </Col>
     );
   });
 
   return (
     <>
-      <Button color="info" onClick={() => setEditingTag({})}>
+      <Button onClick={() => setEditingTag({})}>
         Add tag
       </Button>
       <div style={{ padding: "20px" }}>
@@ -49,7 +52,9 @@ export const Tags = ({ refreshTags, tags, lists, todos }) => {
             refreshTags={refreshTags}
           />
         )}
-        <CardColumns style={{ columnCount: "5" }}>{cards}</CardColumns>
+        <Row xs={1} md={3} lg={5} className="g-3">
+          {cards}
+        </Row>
       </div>
     </>
   );

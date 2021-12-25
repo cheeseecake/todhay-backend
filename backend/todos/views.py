@@ -54,13 +54,10 @@ class TodoViewSet(viewsets.ModelViewSet):
         #    print("No more todos as end date has past")
         #    return
 
-        # If due_date is not set, set due_date to be completed_date
-        if not updated_todo.due_date:
-            updated_todo.due_date = updated_todo.completed_date
         # Calculate the new due_date and start_date
         relativedelta_to_add = FREQUENCIES[updated_todo.frequency]
         new_start_date = updated_todo.start_date + relativedelta_to_add
-        new_due_date = updated_todo.due_date + relativedelta_to_add
+        new_due_date = updated_todo.due_date + relativedelta_to_add if updated_todo.due_date else None
 
         # If end_date is set, and new_due_date is past the todo's end_date, don't create the recurring todo
         if updated_todo.end_date and new_due_date >= updated_todo.end_date:
@@ -77,7 +74,7 @@ class TodoViewSet(viewsets.ModelViewSet):
         # new_todo.completed_date = None
 
         # If the recurring in progress todo already exists, don't bother creating it
-        # We compare the List, frequency, title and completed_date
+        # We compare the list, frequency, title and completed_date
         if Todo.objects.filter(list=updated_todo.list,
                             frequency=updated_todo.frequency,
                             title=updated_todo.title,

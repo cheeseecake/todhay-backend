@@ -21,8 +21,12 @@ FREQUENCIES = {
 class Tag(models.Model):
     """Can be set on Lists, e.g. 'Habit', 'Learning', 'Social', 'Work', or any combination of them"""
     title = models.TextField()
+    description = models.TextField(blank=True)
+    topic = models.BooleanField(default=True)
+
     class Meta:
-        ordering = ['title']
+        ordering = ['topic', 'title']
+
 
 class Metadata(models.Model):
     """Common properties of List and Todo are grouped here"""
@@ -35,7 +39,7 @@ class Metadata(models.Model):
     title = models.TextField()
 
     description = models.TextField(blank=True)
-    start_date = models.DateField(default=date.today)
+    start_date = models.DateField(blank=True, null=True)
     due_date = models.DateField(blank=True, null=True)
     completed_date = models.DateField(blank=True, null=True)
 
@@ -61,15 +65,15 @@ class List(Metadata):
                 continue
             todo.completed_date = date.today()
             todo.save()
-    class Meta:
-        ordering = ['title']
+
 
 class Todo(Metadata):
     list = models.ForeignKey(List, on_delete=models.CASCADE)
 
     # If frequency is not None, this means the todo is recurring
     frequency = models.CharField(max_length=20,
-                                 choices=(map(lambda x: (x, x), FREQUENCIES.keys())),
+                                 choices=(
+                                     map(lambda x: (x, x), FREQUENCIES.keys())),
                                  default=None,
                                  null=True,
                                  blank=True)
@@ -85,11 +89,14 @@ class Todo(Metadata):
         # Don't update todo if completed_date is before start_date
         if self.completed_date and (self.completed_date < self.start_date):
             raise ValidationError('completed_date must be after start_date.')
+
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
 
+
 class Wishlist(models.Model):
+    tags = models.ManyToManyField(Tag, blank=True)
     title = models.TextField()
     cost = models.DecimalField(max_digits=6, decimal_places=2)
     img_url = models.URLField(max_length=400, blank=True)

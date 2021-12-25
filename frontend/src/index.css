@@ -12,3 +12,13 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+.subtitle {
+  font-size: 80%;
+  color: #597AB1;
+  font-weight: bold;
+  font-style: italic;
+}
+.active {
+  font-weight: bold;
+}

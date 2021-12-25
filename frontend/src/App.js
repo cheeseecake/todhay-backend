@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { FaPiggyBank } from "react-icons/fa";
-import { Nav, Navbar, NavbarText, NavLink } from "reactstrap";
+import { Container, Nav, Navbar } from "react-bootstrap";
+
 import { getType } from "./api/api";
-import { Lists } from "./lists/Lists";
 import { DateTime } from "./shared/DateTime";
+
+import { Lists } from "./lists/Lists";
 import { Tags } from "./tags/Tags";
 import { Todos } from "./todos/Todos";
 import { Wishlist } from "./wishlist/Wishlist";
@@ -14,10 +16,6 @@ export const API_ROOT = "/api";
 This allows us to reference them as DATA_TYPES.[type],
 which prevents errors from typos happening further down.*/
 export const DATA_TYPES = {
-  TAGS: {
-    displayName: "Tags",
-    apiName: "tags",
-  },
   TODOS: {
     displayName: "Todos",
     apiName: "todos",
@@ -29,6 +27,10 @@ export const DATA_TYPES = {
   WISHLIST: {
     displayName: "Wishlist",
     apiName: "wishlists",
+  },
+  TAGS: {
+    displayName: "Tags",
+    apiName: "tags",
   },
 };
 
@@ -122,6 +124,7 @@ export const App = () => {
         availableRewards={availableRewards}
         refreshWishlist={refreshWishlist}
         wishlist={wishlist}
+        tags={tags}
       />
     ),
   };
@@ -130,53 +133,41 @@ export const App = () => {
     <div>
       <Navbar
         style={{ backgroundColor: "#2D3047" }}
-        expand="md"
-        bg="dark"
-        variant="light"
+        expand="lg"
+        variant="dark"
       >
-        <Nav className="mr-auto" tabs>
-          {Object.entries(DATA_TYPES).map(([, { apiName, displayName }]) => (
-            <NavLink
-              key={displayName}
-              active={apiName === activeDataType}
-              style={{ color: "white", backgroundColor: "#2D3047" }}
-              onClick={() => setActiveDataType(apiName)}
-            >
-              {displayName}
-            </NavLink>
-          ))}
-        </Nav>
-        <NavbarText
-          style={{ color: "white" }}
-          className="d-flex justify-content-center"
-        >
-          <DateTime />
-        </NavbarText>
+        <Container fluid style={{ padding: "1px 100px 1px" }}>
+          <Nav variant="tabs" className="me-auto">
+            {Object.entries(DATA_TYPES).map(([, { apiName, displayName }]) => (
+              <Nav.Link
+                key={displayName}
+                active={apiName === activeDataType}
+                style={{ color: "white", backgroundColor: "#2D3047" }}
+                onClick={() => setActiveDataType(apiName)}
+              >
+                {displayName}
+              </Nav.Link>
+            ))}
+          </Nav>
+          <Navbar.Text
+            style={{ color: "white" }}
+            className="justify-content-end"
+          >
+            <DateTime />{"\n"}
+            <FaPiggyBank />
+            <span style={{
+              fontSize: "80%",
+              fontStyle: "italic"
+            }}> Available Rewards: ${(totalRewards - claimedRewards).toFixed(2)} / ${totalRewards.toFixed(2)}
+            </span>
+          </Navbar.Text>
+        </Container>
       </Navbar>
-      <Navbar
-        style={{ backgroundColor: "#2D3047" }}
-        expand="md"
-        bg="dark"
-        variant="light"
-      >
-        <NavbarText
-          style={{ color: "white" }}
-          className="mr-auto d-flex justify-content-center"
-        >
-          <FaPiggyBank /> Available: $
-          {(totalRewards - claimedRewards).toFixed(2)}
-        </NavbarText>
-        <NavbarText
-          style={{ color: "white" }}
-          className="ml-auto d-flex justify-content-center"
-        >
-          Redeemed: ${claimedRewards.toFixed(2)} / ${totalRewards.toFixed(2)}
-        </NavbarText>
-      </Navbar>
-      <div style={{ padding: "20px 100px 20px" }}>
+      <Container fluid style={{ padding: "20px 100px 20px" }}>
+
         {/* We display the appropriate view based on activeDataType*/}
         {views[activeDataType]}
-      </div>
-    </div>
+      </Container >
+    </div >
   );
 };

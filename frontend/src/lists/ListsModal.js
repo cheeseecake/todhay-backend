@@ -1,24 +1,19 @@
 import format from "date-fns/format";
 import React, { useRef } from "react";
 import Select from "react-select";
-import {
-  Button,
-  Col,
-  Form,
-  FormGroup,
-  Input,
-  Label,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-  Row,
-} from "reactstrap";
-import { createType, updateType } from "../api/api";
+import { Button, Row, Col, Form, Modal } from "react-bootstrap";
+import { createType, deleteType, updateType } from "../api/api";
 import { DATA_TYPES } from "../App";
 
 export const ListsModal = ({ list, setList, tags, refreshLists }) => {
   const formRef = useRef();
+
+  const onDelete = () =>
+    window.confirm(`Delete '${list.title}?'`) &&
+    deleteType(list, DATA_TYPES.LISTS).then(() => {
+      refreshLists();
+      setList(null);
+    });
 
   const onSubmit = () => {
     const id = list?.id;
@@ -29,10 +24,10 @@ export const ListsModal = ({ list, setList, tags, refreshLists }) => {
       and here the ... destructuring operator is used to coerce it into an array,
       so we can iterate through it */
       tags: formRef.current.tags.length > 1
-      ? Array.from(formRef.current.tags, (tag) => parseInt(tag.value))
-      : formRef.current.tags.value
-         ? [parseInt(formRef.current.tags.value)]
-         : []
+        ? Array.from(formRef.current.tags, (tag) => parseInt(tag.value))
+        : formRef.current.tags.value
+          ? [parseInt(formRef.current.tags.value)]
+          : []
       ,
       description: formRef.current.description.value,
       start_date: formRef.current.start_date.value || null,
@@ -53,61 +48,61 @@ export const ListsModal = ({ list, setList, tags, refreshLists }) => {
   };
 
   return (
-    <Modal isOpen toggle={() => setList(null)} className="modal-lg">
-      <ModalHeader>
+    <Modal show onHide={() => setList(null)} size="lg" backdrop="static">
+      <Modal.Header closeButton>
         /{DATA_TYPES.LISTS.apiName}/{list.id || "<New List>"}
-      </ModalHeader>
-      <ModalBody>
-        <Form id={"form"} innerRef={formRef}>
-          <Row form>
+      </Modal.Header>
+      <Modal.Body>
+        <Form ref={formRef}>
+          <Row>
             <Col md={6}>
-              <FormGroup>
-                <Label for="title">Title</Label>
-                <Input
+              <Form.Group>
+                <Form.Label for="title">Title</Form.Label>
+                <Form.Control
                   type="text"
                   id="title"
                   name="title"
                   defaultValue={list?.title}
-                  placeholder="Title" 
+                  placeholder="Title"
                   required
                 />
-              </FormGroup>
+              </Form.Group>
             </Col>
 
             <Col md={6}>
-              <FormGroup>
-              <Label for="tags">Tags</Label>
-              <Select
-                name="tags"
-                placeholder="Tags"
-                closeMenuOnSelect={false}
-                isMulti
-                defaultValue={tags
-                  .filter((tag) => list.tags?.includes(tag.id))
-                  .map((tag) => ({value: tag.id, label: tag.title}))}                
-                options={tags
-                  .map((tag) => ({value: tag.id, label: tag.title}))}
-              />
-              </FormGroup>
+              <Form.Group>
+                <Form.Label for="tags">Tags</Form.Label>
+                <Select
+                  name="tags"
+                  placeholder="Tags"
+                  closeMenuOnSelect={false}
+                  isMulti
+                  defaultValue={tags
+                    .filter((tag) => list.tags?.includes(tag.id))
+                    .map((tag) => ({ value: tag.id, label: tag.title }))}
+                  options={tags
+                    .map((tag) => ({ value: tag.id, label: tag.title }))}
+                />
+              </Form.Group>
             </Col>
           </Row>
 
-          <FormGroup>
-            <Label for="description">Description</Label>
-            <Input
+          <Form.Group>
+            <Form.Label for="description">Description</Form.Label>
+            <Form.Control
               type="textarea"
               id="description"
               name="description"
               defaultValue={list?.description}
               placeholder="Description"
             />
-          </FormGroup>
+          </Form.Group>
 
           <Row form>
             <Col md={4}>
-              <FormGroup>
-                <Label for="start_date">Start Date</Label>
-                <Input
+              <Form.Group>
+                <Form.Label for="start_date">Start Date</Form.Label>
+                <Form.Control
                   type="date"
                   id="start_date"
                   name="start_date"
@@ -115,38 +110,39 @@ export const ListsModal = ({ list, setList, tags, refreshLists }) => {
                     list?.start_date || format(new Date(), "yyyy-MM-dd")
                   }
                 />
-              </FormGroup>
+              </Form.Group>
             </Col>
             <Col md={4}>
-              <FormGroup>
-                <Label for="due_date">Due Date</Label>
-                <Input
+              <Form.Group>
+                <Form.Label for="due_date">Due Date</Form.Label>
+                <Form.Control
                   type="date"
                   id="due_date"
                   name="due_date"
                   defaultValue={list?.due_date}
                 />
-              </FormGroup>
+              </Form.Group>
             </Col>
             <Col md={4}>
-              <FormGroup>
-                <Label for="completed_date">Completed Date</Label>
-                <Input
+              <Form.Group>
+                <Form.Label for="completed_date">Completed Date</Form.Label>
+                <Form.Control
                   type="date"
                   id="completed_date"
                   name="completed_date"
                   defaultValue={list?.completed_date}
                 />
-              </FormGroup>
+              </Form.Group>
             </Col>
           </Row>
         </Form>
-      </ModalBody>
-      <ModalFooter>
-        <Button color="primary" onClick={onSubmit}>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="dark" onClick={onDelete}>Delete</Button>{"  "}
+        <Button variant="success" onClick={onSubmit}>
           Save
         </Button>
-      </ModalFooter>
+      </Modal.Footer>
     </Modal>
   );
 };
