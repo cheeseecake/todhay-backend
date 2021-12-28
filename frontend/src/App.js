@@ -133,7 +133,7 @@ export const App = () => {
     <div>
       <Navbar
         style={{ backgroundColor: "#2D3047" }}
-        expand="lg"
+        expand="sm"
         variant="dark"
       >
         <Container fluid style={{ padding: "1px 100px 1px" }}>
@@ -154,11 +154,9 @@ export const App = () => {
             className="justify-content-end"
           >
             <DateTime />{"\n"}
-            <FaPiggyBank />
-            <span style={{
-              fontSize: "80%",
-              fontStyle: "italic"
-            }}> Available Rewards: ${(totalRewards - claimedRewards).toFixed(2)} / ${totalRewards.toFixed(2)}
+            <FaPiggyBank />{" "}
+            <span >
+              Available Rewards: ${(totalRewards - claimedRewards).toFixed(2)} / ${totalRewards.toFixed(2)}
             </span>
           </Navbar.Text>
         </Container>

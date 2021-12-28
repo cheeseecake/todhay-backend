@@ -98,7 +98,7 @@ class Todo(Metadata):
 class Wishlist(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     title = models.TextField()
-    cost = models.DecimalField(max_digits=6, decimal_places=2)
+    cost = models.DecimalField(default=0, max_digits=6, decimal_places=2)
     img_url = models.URLField(max_length=400, blank=True)
     product_url = models.URLField(max_length=400, blank=True)
     count = models.IntegerField(default=0, null=True)

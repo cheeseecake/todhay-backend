@@ -1,34 +1,50 @@
-import React, { useRef } from "react";
+import React from "react";
 import { Button, Form, Modal, Row, Col } from "react-bootstrap";
 import Select from "react-select";
 import { createType, deleteType, updateType } from "../api/api";
 import { DATA_TYPES } from "../App";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from "yup";
+
+const wishlistSchema = yup.object({
+  title: yup.string().required(),
+  tags: yup.array(),
+  cost: yup.number(),
+  repeat: yup.boolean(),
+  last_purchased_date: yup.string()
+    .nullable()
+    .transform(v => (v === "" ? null : v)),
+  img_url: yup.string().url(),
+  product_url: yup.string().url()
+}).required();
 
 export const WishlistModal = ({ refreshWishlist, setWish, wish, tags }) => {
+  const { control, register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(wishlistSchema),
+    defaultValues: {
+      title: wish?.title,
+      tags: tags
+        .filter((tag) => wish.tags?.includes(tag.id))
+        .map((tag) => ({ value: tag.id, label: tag.title })),
+      cost: wish?.cost || 10,
+      repeat: wish?.repeat,
+      last_purchased_date: wish?.last_purchased_date,
+      img_url: wish?.img_url,
+      product_url: wish?.product_url
+    }
+  });
 
-  const formRef = useRef();
-
-  const onSubmit = () => {
+  const onSubmit = (data) => {
     const id = wish?.id;
 
-    const wishData = {
-      title: formRef.current.title.value,
-      tags: formRef.current.tags.length > 1
-        ? Array.from(formRef.current.tags, (tag) => parseInt(tag.value))
-        : formRef.current.tags.value
-          ? [parseInt(formRef.current.tags.value)]
-          : []
-      ,
-      cost: formRef.current.cost.value,
-      repeat: formRef.current.repeat.value,
-      img_url: formRef.current.img_url.value,
-      product_url: formRef.current.product_url.value,
-      last_purchased_date: formRef.current.last_purchased_date.value || null,
-    };
+    data.tags = data.tags.map(function (tag) {
+      return tag.value;
+    });
 
     const operation = id
-      ? updateType({ id, ...wishData }, DATA_TYPES.WISHLIST) // Existing wish
-      : createType(wishData, DATA_TYPES.WISHLIST); // New wish
+      ? updateType({ id, ...data }, DATA_TYPES.WISHLIST) // Existing wish
+      : createType(data, DATA_TYPES.WISHLIST); // New wish
 
     operation
       .then(() => {
@@ -51,34 +67,34 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish, tags }) => {
         /{DATA_TYPES.WISHLIST.apiName}/{wish?.id || "<New Wish>"}
       </Modal.Header>
       <Modal.Body>
-        <Form id={"form"} ref={formRef}>
+        <Form>
           <Row>
             <Col md={6}>
               <Form.Group>
-                <Form.Label for="title">Title</Form.Label>
-                <Form.Control
+                <Form.Label>Title</Form.Label>
+                <Form.Control {...register("title")}
                   type="text"
                   name="title"
-                  defaultValue={wish?.title}
                   placeholder="Title"
                   required
-                />
+                /><p className="error">{errors.title?.message}</p>
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group>
-                <Form.Label for="tags">Tags</Form.Label>
-                <Select
+                <Form.Label>Tags</Form.Label>
+                <Controller
                   name="tags"
-                  placeholder="Tags"
-                  closeMenuOnSelect={false}
-                  isMulti
-                  defaultValue={tags
-                    .filter((tag) => wish.tags?.includes(tag.id))
-                    .map((tag) => ({ value: tag.id, label: tag.title }))}
-                  options={tags
-                    .map((tag) => ({ value: tag.id, label: tag.title }))}
-                />
+                  control={control}
+                  render={({ field }) => <Select
+                    {...field}
+                    placeholder="Tags"
+                    closeMenuOnSelect={false}
+                    isMulti
+                    options={tags
+                      .map((tag) => ({ value: tag.id, label: tag.title }))}
+                  />}
+                /><p className="error">{errors.tags?.message}</p>
               </Form.Group>
             </Col>
           </Row>
@@ -86,56 +102,58 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish, tags }) => {
           <Row>
             <Col md={4}>
               <Form.Group>
-                <Form.Label for="cost">Cost ($)</Form.Label>
-                <Form.Control
+                <Form.Label>Cost ($)</Form.Label>
+                <Form.Control {...register("cost")}
                   type="number"
                   id="cost"
                   name="cost"
-                  defaultValue={wish?.cost}
-                />
+                /><p className="error">{errors.cost?.message}</p>
               </Form.Group>
             </Col>
 
             <Col md={4}>
               <Form.Group>
-                <Form.Label for="type">Repeat?</Form.Label>
-                <Form.Select name="repeat" defaultValue={wish?.repeat}>
-                  <option value={"false"}>false</option>
-                  <option value={"true"}>true</option>
+                <Form.Label>Repeat?</Form.Label>
+                <Form.Select  {...register("repeat")}
+                  name="repeat"
+                >
+                  <option value={false}>false</option>
+                  <option value={true}>true</option>
                 </Form.Select>
               </Form.Group>
             </Col>
             <Col md={4}>
               <Form.Group>
-                <Form.Label for="end_date">Last Purchased Date</Form.Label>
-                <Form.Control
+                <Form.Label>Last Purchased Date</Form.Label>
+                <Form.Control {...register("last_purchased_date")}
                   type="date"
                   name="last_purchased_date"
-                  defaultValue={wish?.last_purchased_date}
-                />
+                /><p className="error">{errors.last_purchased_date?.message}</p>
               </Form.Group>
             </Col>
           </Row>
 
           <Form.Group>
-            <Form.Label for="imgurl">Image URL</Form.Label>
-            <Form.Control type="text" name="img_url" defaultValue={wish?.img_url} />
-          </Form.Group>
+            <Form.Label>Image URL</Form.Label>
+            <Form.Control  {...register("img_url")}
+              type="text"
+              name="img_url"
+            />
+          </Form.Group><p className="error">{errors.img_url?.message}</p>
 
           <Form.Group>
-            <Form.Label for="producturl">Product URL</Form.Label>
-            <Form.Control
+            <Form.Label>Product URL</Form.Label>
+            <Form.Control {...register("product_url")}
               type="text"
               name="product_url"
-              defaultValue={wish?.product_url}
-            />
+            /><p className="error">{errors.product_url?.message}</p>
           </Form.Group>
 
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="dark" onClick={onDelete}>Delete</Button>
-        <Button variant="success" onClick={onSubmit}>
+        <Button variant="secondary" className="me-auto" onClick={onDelete}>Delete</Button>
+        <Button variant="success" onClick={handleSubmit(onSubmit)}>
           Save
         </Button>
       </Modal.Footer>

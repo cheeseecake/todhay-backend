@@ -1,34 +1,67 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { Button, Row, Col, Form, Modal } from "react-bootstrap";
 import { updateType, createType, deleteType } from "../api/api";
 import { DATA_TYPES } from "../App";
-import { format } from "date-fns";
+import { useForm } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from "yup";
+
+const todoSchema = yup.object({
+  title: yup.string().required(),
+  list: yup.string(),
+  effort: yup.number().positive(),
+  reward: yup.number().positive(),
+  frequency: yup.string()
+    .nullable()
+    .transform(v => (v === "" ? null : v)),
+  end_date: yup.string()
+    .nullable()
+    .transform(v => (v === "" ? null : v)),
+  description: yup.string(),
+  start_date: yup.string()
+    .nullable()
+    .transform(v => (v === "" ? null : v)),
+  due_date: yup.string()
+    .nullable()
+    .transform(v => (v === "" ? null : v)),
+  completed_date: yup.string()
+    .nullable()
+    .transform(v => (v === "" ? null : v))
+    .test(
+      'invalid_date',
+      'Completed date must be after start date',
+      function (v) {
+        return !v ||
+          new Date(v).getTime() >= new Date(this.parent.start_date).getTime()
+      }
+    )
+}).required();
 
 export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
-  const formRef = useRef();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(todoSchema),
+    defaultValues: {
+      title: todo?.title,
+      list: todo?.list,
+      effort: todo?.effort || 0.5,
+      reward: todo?.reward || 0.5,
+      frequency: todo?.frequency,
+      end_date: todo?.end_date,
+      description: todo?.description,
+      start_date: todo?.start_date,
+      due_date: todo?.due_date,
+      completed_date: todo?.completed_date,
+    }
+  });
 
   const [effort, setEffort] = useState(todo?.effort || 0.5);
 
-  const onSubmit = () => {
+  const onSubmit = (data) => {
     const id = todo?.id;
 
-    /* We have to do '|| null', to make the frontend send 'null' instead of the blank string ''.*/
-    const todoData = {
-      completed_date: formRef.current.completed_date.value || null,
-      description: formRef.current.description.value,
-      due_date: formRef.current.due_date.value || null,
-      effort, // This value is read from useState instead since it's used to calculate the suggestions
-      end_date: formRef.current.end_date.value || null,
-      frequency: formRef.current.frequency.value || null,
-      list: formRef.current.list.value,
-      reward: formRef.current.reward.value,
-      start_date: formRef.current.start_date.value || null,
-      title: formRef.current.title.value,
-    };
-
     const operation = id
-      ? updateType({ id, ...todoData }, DATA_TYPES.TODOS) // Existing todo
-      : createType(todoData, DATA_TYPES.TODOS); // New todo
+      ? updateType({ id, ...data }, DATA_TYPES.TODOS) // Existing todo
+      : createType(data, DATA_TYPES.TODOS); // New todo
 
     operation
       .then(() => {
@@ -51,25 +84,27 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
         /{DATA_TYPES.TODOS.apiName}/{todo?.id || "<New Todo>"}
       </Modal.Header>
       <Modal.Body>
-        <Form id={"form"} ref={formRef}>
-          <Row form>
+        <Form>
+          <Row>
             <Col md={8}>
               <Form.Group>
-                <Form.Label for="title">Title</Form.Label>
-                <Form.Control
+                <Form.Label>Title</Form.Label>
+                <Form.Control {...register("title")}
                   type="text"
                   id="title"
                   name="title"
-                  defaultValue={todo?.title}
                   placeholder="Title"
                   required
-                />
+                /><p className="error">{errors.title?.message}</p>
               </Form.Group>
             </Col>
             <Col md={4}>
               <Form.Group>
-                <Form.Label for={"list"}>List</Form.Label>
-                <Form.Select name="list" defaultValue={todo?.list}>
+                <Form.Label>List</Form.Label>
+                <Form.Select {...register("list")}
+                  name="list"
+                  defaultValue={todo?.list}
+                >
                   {lists.map((e) => (
                     <option key={e.id} value={e.id}>
                       {e.title}
@@ -80,37 +115,34 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
             </Col>
           </Row>
 
-          <Row form>
+          <Row >
             <Col md={6}>
               <Form.Group>
-                <Form.Label for="effort">Effort (hrs) - {effort * 60} minutes</Form.Label>
-                <Form.Control
+                <Form.Label>Effort (hrs) - {effort * 60} minutes</Form.Label>
+                <Form.Control {...register("effort")}
                   type="integer"
                   name="effort"
-                  value={effort}
                   onChange={(e) => setEffort(e.target.value)}
-                />
+                /><p className="error">{errors.effort?.message}</p>
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group>
-                <Form.Label for="reward">Reward ($) - recommended ${effort}</Form.Label>
-                <Form.Control
+                <Form.Label>Reward ($) - recommended ${effort}</Form.Label>
+                <Form.Control {...register("reward")}
                   type="integer"
                   name="reward"
-                  defaultValue={todo?.reward || 0.5}
-                />
+                /><p className="error">{errors.reward?.message}</p>
               </Form.Group>
             </Col>
           </Row>
 
-          <Row form>
+          <Row >
             <Col md={6}>
               <Form.Group>
-                <Form.Label for="frequency">Frequency</Form.Label>
-                <Form.Select
+                <Form.Label>Frequency</Form.Label>
+                <Form.Select {...register("frequency")}
                   name="frequency"
-                  defaultValue={todo?.frequency}
                 >
                   <option value={""}>One-time</option>
                   <option value={"DAILY"}>Daily</option>
@@ -124,24 +156,22 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
 
             <Col md={6}>
               <Form.Group>
-                <Form.Label for="end_date">End Date</Form.Label>
-                <Form.Control
+                <Form.Label>End Date</Form.Label>
+                <Form.Control {...register("end_date")}
                   type="date"
                   name="end_date"
-                  defaultValue={todo?.end_date}
                 />
               </Form.Group>
             </Col>
           </Row>
           <Row>
             <Form.Group>
-              <Form.Label for="description">Description</Form.Label>
-              <Form.Control
+              <Form.Label>Description</Form.Label>
+              <Form.Control {...register("description")}
                 style={{ height: "150px" }}
-                type="textarea"
+                as="textarea"
                 id="description"
                 name="description"
-                defaultValue={todo?.description}
                 placeholder="Description"
               />
             </Form.Group>
@@ -149,45 +179,42 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
           <Row>
             <Col md={4}>
               <Form.Group>
-                <Form.Label for="start_date">Start Date</Form.Label>
-                <Form.Control
+                <Form.Label>Start Date</Form.Label>
+                <Form.Control {...register("start_date")}
                   type="date"
                   id="start_date"
                   name="start_date"
-                  defaultValue={
-                    todo?.start_date || format(new Date(), "yyyy-MM-dd")
-                  }
                 />
               </Form.Group>
             </Col>
             <Col md={4}>
               <Form.Group>
-                <Form.Label for="due_date">Due Date</Form.Label>
-                <Form.Control
+                <Form.Label>Due Date</Form.Label>
+                <Form.Control {...register("due_date")}
                   type="date"
                   id="due_date"
                   name="due_date"
-                  defaultValue={todo?.due_date}
                 />
               </Form.Group>
             </Col>
             <Col md={4}>
               <Form.Group>
-                <Form.Label for="completed_date">Completed Date</Form.Label>
-                <Form.Control
+                <Form.Label>Completed Date</Form.Label>
+                <Form.Control {...register("completed_date")}
                   type="date"
                   id="completed_date"
                   name="completed_date"
-                  defaultValue={todo?.completed_date}
-                />
+                /><p className="error">{errors.completed_date?.message}</p>
               </Form.Group>
             </Col>
           </Row>
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="dark" onClick={onDelete}>Delete</Button>{' '}
-        <Button variant="success" onClick={onSubmit}>Save</Button>{' '}
+        <Button variant="secondary" className="me-auto" onClick={onDelete}>Delete</Button>
+        <Button variant="success" onClick={handleSubmit(onSubmit)}>
+          Save
+        </Button>
       </Modal.Footer>
     </Modal>
   );

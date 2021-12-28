@@ -1,10 +1,26 @@
-import React, { useRef } from "react";
+import React from "react";
 import { Button, Form, Modal, Row, Col } from "react-bootstrap";
 import { DATA_TYPES } from "../App";
 import { createType, deleteType, updateType } from "../api/api";
+import { useForm } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from "yup";
+
+const tagSchema = yup.object({
+  title: yup.string().required(),
+  topic: yup.boolean().required(),
+  description: yup.string(),
+}).required();
 
 export const TagsModal = ({ setTag, tag, refreshTags }) => {
-  const formRef = useRef();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(tagSchema),
+    defaultValues: {
+      title: tag?.title,
+      tags: tag.topic || true,
+      description: tag?.description
+    }
+  });
 
   const onDelete = () =>
     window.confirm(`Delete ${tag?.title}?`) &&
@@ -13,17 +29,12 @@ export const TagsModal = ({ setTag, tag, refreshTags }) => {
       setTag(null);
     });
 
-  const onSubmit = () => {
+  const onSubmit = (data) => {
     const id = tag?.id;
 
-    const tagData = {
-      title: formRef.current.title.value,
-      topic: formRef.current.topic.value
-    };
-
     const operation = id
-      ? updateType({ id, ...tagData }, DATA_TYPES.TAGS) // Existing wish
-      : createType(tagData, DATA_TYPES.TAGS); // New wish
+      ? updateType({ id, ...data }, DATA_TYPES.TAGS) // Existing wish
+      : createType(data, DATA_TYPES.TAGS); // New wish
 
     operation
       .then(() => {
@@ -40,42 +51,40 @@ export const TagsModal = ({ setTag, tag, refreshTags }) => {
       </Modal.Header>
 
       <Modal.Body>
-        <Form ref={formRef}>
+        <Form>
           <Row>
             <Col md={8}>
               <Form.Group>
-                <Form.Label for="title">Title</Form.Label>
-                <Form.Control
+                <Form.Label>Title</Form.Label>
+                <Form.Control {...register("title")}
                   type="text"
                   name="title"
-                  defaultValue={tag?.title}
                   placeholder="Title"
                   required
-                />
+                /><p className="error">{errors.title?.message}</p>
               </Form.Group>
             </Col>
             <Col md={4}>
               <Form.Group>
-                <Form.Label for="topic">Topic</Form.Label>
-                <Form.Select
+                <Form.Label>Topic</Form.Label>
+                <Form.Select {...register("topic")}
                   name="topic"
-                  defaultValue={tag?.topic}
                 >
-                  <option value={"true"}>true</option>
-                  <option value={"false"}>false</option>
+                  <option value={true}>true</option>
+                  <option value={false}>false</option>
                 </Form.Select>
               </Form.Group>
             </Col>
           </Row>
           <Row>
             <Form.Group>
-              <Form.Label for="description">Description</Form.Label>
+              <Form.Label>Description</Form.Label>
               <Form.Control
+                {...register("description")}
                 style={{ height: "150px" }}
-                type="textarea"
+                as="textarea"
                 id="description"
                 name="description"
-                defaultValue={tag?.description}
                 placeholder="Description"
               />
             </Form.Group>
@@ -83,8 +92,8 @@ export const TagsModal = ({ setTag, tag, refreshTags }) => {
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="dark" onClick={onDelete}>Delete</Button>
-        <Button variant="success" onClick={onSubmit}>
+        <Button variant="secondary" className="me-auto" onClick={onDelete}>Delete</Button>
+        <Button variant="success" onClick={handleSubmit(onSubmit)}>
           Save
         </Button>
       </Modal.Footer>

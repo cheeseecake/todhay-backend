@@ -22,3 +22,8 @@ code {
 .active {
   font-weight: bold;
 }
+.error {
+  font-size: 80%;
+  color: #9c391b;
+  font-style: italic;
+}

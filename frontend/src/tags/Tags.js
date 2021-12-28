@@ -24,7 +24,7 @@ export const Tags = ({ refreshTags, tags, lists, todos }) => {
       <Col key={tag.id}>
         <Card
           onClick={() => setEditingTag(tag)}
-          bg={tag.topic ? "dark" : "light"}
+          bg={tag.topic ? "secondary" : "light"}
           text={tag.topic ? "light" : "dark"}
           style={{ cursor: "pointer" }}
         >
@@ -52,7 +52,7 @@ export const Tags = ({ refreshTags, tags, lists, todos }) => {
             refreshTags={refreshTags}
           />
         )}
-        <Row xs={1} md={3} lg={5} className="g-3">
+        <Row xs={2} md={3} lg={5} className="g-3">
           {cards}
         </Row>
       </div>

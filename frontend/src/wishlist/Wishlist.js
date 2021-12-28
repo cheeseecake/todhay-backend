@@ -41,7 +41,6 @@ export const Wishlist = ({ availableRewards, refreshWishlist, wishlist, tags }) 
         >
           {wish.img_url && (
             <Card.Img
-              top
               width="100%"
               src={wish?.img_url}
               alt="img"
@@ -68,7 +67,7 @@ export const Wishlist = ({ availableRewards, refreshWishlist, wishlist, tags }) 
             <Card.Text>
               {wish.tags.map(id => (
                 <Badge pill key={id}
-                  bg={tags.find(tag => tag.id === id).topic ? "dark" : "light"}
+                  bg={tags.find(tag => tag.id === id).topic ? "secondary" : "light"}
                   text={tags.find(tag => tag.id === id).topic ? "light" : "dark"}
                   style={{ margin: '5px 5px 5px 0' }}>
                   {tags.find(tag => tag.id === id).title}

@@ -1,12 +1,50 @@
 import format from "date-fns/format";
-import React, { useRef } from "react";
+import React from "react";
 import Select from "react-select";
 import { Button, Row, Col, Form, Modal } from "react-bootstrap";
 import { createType, deleteType, updateType } from "../api/api";
 import { DATA_TYPES } from "../App";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from "yup";
+
+const listSchema = yup.object({
+  title: yup.string().required(),
+  tags: yup.array(),
+  description: yup.string(),
+  start_date: yup.string()
+    .nullable()
+    .transform(v => (v === "" ? null : v)),
+  due_date: yup.string()
+    .nullable()
+    .transform(v => (v === "" ? null : v)),
+  completed_date: yup.string()
+    .nullable()
+    .transform(v => (v === "" ? null : v))
+    .test(
+      'invalid_date',
+      'Date must be after Start date',
+      function (v) {
+        return !v ||
+          new Date(v).getTime() >= new Date(this.parent.start_date).getTime()
+      }
+    ),
+}).required();
 
 export const ListsModal = ({ list, setList, tags, refreshLists }) => {
-  const formRef = useRef();
+  const { control, register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(listSchema),
+    defaultValues: {
+      title: list?.title,
+      tags: tags
+        .filter((tag) => list.tags?.includes(tag.id))
+        .map((tag) => ({ value: tag.id, label: tag.title })),
+      description: list?.description,
+      start_date: list?.start_date || format(new Date(), "yyyy-MM-dd"),
+      due_date: list?.due_date,
+      completed_date: list?.completed_date
+    }
+  });
 
   const onDelete = () =>
     window.confirm(`Delete '${list.title}?'`) &&
@@ -15,29 +53,16 @@ export const ListsModal = ({ list, setList, tags, refreshLists }) => {
       setList(null);
     });
 
-  const onSubmit = () => {
+  const onSubmit = (data) => {
     const id = list?.id;
 
-    const listData = {
-      title: formRef.current.title.value,
-      /* In HTML, the options of a select element are not an array (although 'array-like'),
-      and here the ... destructuring operator is used to coerce it into an array,
-      so we can iterate through it */
-      tags: formRef.current.tags.length > 1
-        ? Array.from(formRef.current.tags, (tag) => parseInt(tag.value))
-        : formRef.current.tags.value
-          ? [parseInt(formRef.current.tags.value)]
-          : []
-      ,
-      description: formRef.current.description.value,
-      start_date: formRef.current.start_date.value || null,
-      due_date: formRef.current.due_date.value || null,
-      completed_date: formRef.current.completed_date.value || null,
-    };
+    data["tags"] = data["tags"].map(function (tag) {
+      return tag.value;
+    });
 
     const operation = id
-      ? updateType({ id, ...listData }, DATA_TYPES.LISTS) // Existing list
-      : createType(listData, DATA_TYPES.LISTS); // New list
+      ? updateType({ id, ...data }, DATA_TYPES.LISTS) // Existing list
+      : createType(data, DATA_TYPES.LISTS); // New list
 
     operation
       .then(() => {
@@ -53,93 +78,87 @@ export const ListsModal = ({ list, setList, tags, refreshLists }) => {
         /{DATA_TYPES.LISTS.apiName}/{list.id || "<New List>"}
       </Modal.Header>
       <Modal.Body>
-        <Form ref={formRef}>
+        <Form >
           <Row>
             <Col md={6}>
               <Form.Group>
-                <Form.Label for="title">Title</Form.Label>
-                <Form.Control
+                <Form.Label>Title</Form.Label>
+                <Form.Control {...register("title")}
                   type="text"
                   id="title"
                   name="title"
-                  defaultValue={list?.title}
                   placeholder="Title"
                   required
-                />
+                /><p className="title">{errors.effort?.message}</p>
               </Form.Group>
             </Col>
 
             <Col md={6}>
               <Form.Group>
-                <Form.Label for="tags">Tags</Form.Label>
-                <Select
+                <Form.Label>Tags</Form.Label>
+                <Controller
                   name="tags"
-                  placeholder="Tags"
-                  closeMenuOnSelect={false}
-                  isMulti
-                  defaultValue={tags
-                    .filter((tag) => list.tags?.includes(tag.id))
-                    .map((tag) => ({ value: tag.id, label: tag.title }))}
-                  options={tags
-                    .map((tag) => ({ value: tag.id, label: tag.title }))}
-                />
+                  control={control}
+                  render={({ field }) => <Select
+                    {...field}
+                    placeholder="Tags"
+                    closeMenuOnSelect={false}
+                    isMulti
+                    options={tags
+                      .map((tag) => ({ value: tag.id, label: tag.title }))}
+                  />}
+                /><p className="error">{errors.tags?.message}</p>
               </Form.Group>
             </Col>
           </Row>
 
           <Form.Group>
-            <Form.Label for="description">Description</Form.Label>
-            <Form.Control
-              type="textarea"
+            <Form.Label>Description</Form.Label>
+            <Form.Control {...register("description")}
+              as="textarea"
               id="description"
               name="description"
-              defaultValue={list?.description}
               placeholder="Description"
             />
           </Form.Group>
 
-          <Row form>
+          <Row>
             <Col md={4}>
               <Form.Group>
-                <Form.Label for="start_date">Start Date</Form.Label>
-                <Form.Control
+                <Form.Label>Start Date</Form.Label>
+                <Form.Control {...register("start_date")}
                   type="date"
                   id="start_date"
                   name="start_date"
-                  defaultValue={
-                    list?.start_date || format(new Date(), "yyyy-MM-dd")
-                  }
                 />
               </Form.Group>
             </Col>
             <Col md={4}>
               <Form.Group>
-                <Form.Label for="due_date">Due Date</Form.Label>
-                <Form.Control
+                <Form.Label>Due Date</Form.Label>
+                <Form.Control  {...register("due_date")}
                   type="date"
                   id="due_date"
                   name="due_date"
-                  defaultValue={list?.due_date}
                 />
               </Form.Group>
             </Col>
             <Col md={4}>
               <Form.Group>
-                <Form.Label for="completed_date">Completed Date</Form.Label>
-                <Form.Control
+                <Form.Label>Completed Date</Form.Label>
+                <Form.Control {...register("completed_date")}
                   type="date"
                   id="completed_date"
                   name="completed_date"
-                  defaultValue={list?.completed_date}
-                />
+                /><p className="error">{errors.completed_date?.message}</p>
               </Form.Group>
             </Col>
           </Row>
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="dark" onClick={onDelete}>Delete</Button>{"  "}
-        <Button variant="success" onClick={onSubmit}>
+        <Button variant="secondary" className="me-auto" onClick={onDelete}>Delete</Button>{"  "}
+        <Button variant="success" onClick={handleSubmit(onSubmit)}>
           Save
         </Button>
       </Modal.Footer>

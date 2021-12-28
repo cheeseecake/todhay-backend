@@ -75,8 +75,7 @@ export const Lists = ({
                 )})`
               }
             </Card.Subtitle>
-            <Card.Text style={{ fontSize: "80%" }}>
-              Completed{" "}
+            <Card.Text>
               <FcTodoList /> {completedTodosInList.length} todos{" "}
               <FcMoneyTransfer /> ${totalRewards.toFixed(1)}{" "}
               <FcClock /> {totalEffort.toFixed(1)} hrs
@@ -84,7 +83,7 @@ export const Lists = ({
             <Card.Text>
               {list.tags.map(id => (
                 <Badge pill key={id}
-                  bg={tags.find(tag => tag.id === id).topic ? "dark" : "light"}
+                  bg={tags.find(tag => tag.id === id).topic ? "secondary" : "light"}
                   text={tags.find(tag => tag.id === id).topic ? "light" : "dark"}
                   style={{ margin: '5px 5px 5px 0' }}>
                   {tags.find(tag => tag.id === id).title}
@@ -94,7 +93,7 @@ export const Lists = ({
           </Card.Body>
           <Card.Footer>
             <Button
-              variant="primary"
+              variant="outline-dark"
               onClick={(e) => {
                 e.stopPropagation();
                 viewTodosFromListId(list.id);
@@ -111,7 +110,7 @@ export const Lists = ({
   return (
     <>
       <Row>
-        <Col>
+        <Col md="auto">
           <Select
             name="tags"
             placeholder="All Tags"
@@ -125,12 +124,15 @@ export const Lists = ({
             Add list
           </Button>
         </Col>
+        <Col md="auto">
+          <Form.Check
+            type="checkbox"
+            label="Habits Only"
+            onChange={(e) => { setShowHabits(e.target.checked) }}
+          />
+        </Col>
       </Row>
-      <Form.Check
-        type="checkbox"
-        label="Habits Only"
-        onChange={(e) => { setShowHabits(e.target.checked) }}
-      /><br />
+      <br />
       {editingList && (
         <ListsModal
           list={editingList}
@@ -139,7 +141,7 @@ export const Lists = ({
           refreshLists={refreshLists}
         />
       )}
-      <Row xs={1} md={3} lg={5} className="g-3">
+      <Row xs={1} md={3} lg={4} className="g-3">
         {cards}
       </Row>
     </>
