@@ -1,4 +1,4 @@
-import format from "date-fns/format";
+import { format, parseISO } from "date-fns";
 import React from "react";
 import Select from "react-select";
 import { Button, Row, Col, Form, Modal } from "react-bootstrap";
@@ -35,11 +35,11 @@ const listSchema = yup
       .transform((v) => v || null)
       .test(
         "invalid_date",
-        "Date must be after Start date",
+        "Completed date must not be before start date",
         (v, ctx) =>
           !v ||
-          new Date(v).getTime() >= new Date(ctx.parent.start_date).getTime()
-      ),
+          parseISO(v) >= parseISO(ctx.parent.start_date)
+      )
   })
   .required();
 
@@ -110,7 +110,6 @@ export const ListsModal = ({ list, setList, tags, refreshLists }) => {
                 />
               </Form.Group>
             </Col>
-
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Tags</Form.Label>
@@ -134,7 +133,6 @@ export const ListsModal = ({ list, setList, tags, refreshLists }) => {
               </Form.Group>
             </Col>
           </Row>
-
           <Form.Group>
             <Form.Label>Description</Form.Label>
             <Form.Control
@@ -145,7 +143,6 @@ export const ListsModal = ({ list, setList, tags, refreshLists }) => {
               placeholder="Description"
             />
           </Form.Group>
-
           <Row>
             <Col md={4}>
               <Form.Group>
@@ -189,7 +186,6 @@ export const ListsModal = ({ list, setList, tags, refreshLists }) => {
         <Button variant="secondary" className="me-auto" onClick={onDelete}>
           Delete
         </Button>
-        {"  "}
         <Button variant="success" onClick={handleSubmit(onSubmit)}>
           Save
         </Button>

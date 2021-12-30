@@ -3,7 +3,7 @@ import { Button, Form, Modal, Row, Col } from "react-bootstrap";
 import { DATA_TYPES } from "../App";
 import { createType, deleteType, updateType } from "../api/api";
 import { useForm } from "react-hook-form";
-import { yupResolver } from '@hookform/resolvers/yup';
+import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 const tagSchema = yup.object({
@@ -56,18 +56,20 @@ export const TagsModal = ({ setTag, tag, refreshTags }) => {
             <Col md={8}>
               <Form.Group>
                 <Form.Label>Title</Form.Label>
-                <Form.Control {...register("title")}
+                <Form.Control
+                  {...register("title")}
                   type="text"
                   name="title"
                   placeholder="Title"
                   required
-                /><p className="error">{errors.title?.message}</p>
+                />
               </Form.Group>
             </Col>
             <Col md={4}>
               <Form.Group>
                 <Form.Label>Topic</Form.Label>
-                <Form.Select {...register("topic")}
+                <Form.Select
+                  {...register("topic")}
                   name="topic"
                 >
                   <option value={true}>true</option>
@@ -92,7 +94,9 @@ export const TagsModal = ({ setTag, tag, refreshTags }) => {
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" className="me-auto" onClick={onDelete}>Delete</Button>
+        <Button variant="secondary" className="me-auto" onClick={onDelete}>
+          Delete
+        </Button>
         <Button variant="success" onClick={handleSubmit(onSubmit)}>
           Save
         </Button>

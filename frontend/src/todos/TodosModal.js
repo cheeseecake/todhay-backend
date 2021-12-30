@@ -1,9 +1,10 @@
+import { format, parseISO } from "date-fns";
 import React, { useState } from "react";
 import { Button, Row, Col, Form, Modal } from "react-bootstrap";
 import { updateType, createType, deleteType } from "../api/api";
 import { DATA_TYPES } from "../App";
 import { useForm } from "react-hook-form";
-import { yupResolver } from '@hookform/resolvers/yup';
+import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 const todoSchema = yup.object({
@@ -18,22 +19,32 @@ const todoSchema = yup.object({
     .nullable()
     .transform(v => (v === "" ? null : v)),
   description: yup.string(),
-  start_date: yup.string()
+  start_date: yup
+    .string()
     .nullable()
-    .transform(v => (v === "" ? null : v)),
-  due_date: yup.string()
+    .when("completed_date", {
+      // Require start_date if there is a completed_date
+      is: (v) => !!v,
+      then: yup
+        .string()
+        .nullable()
+        .required("Start date is required if completed date is specified"),
+    })
+    .transform((v) => v || null),
+  due_date: yup
+    .string()
     .nullable()
-    .transform(v => (v === "" ? null : v)),
-  completed_date: yup.string()
+    .transform((v) => v || null),
+  completed_date: yup
+    .string()
     .nullable()
-    .transform(v => (v === "" ? null : v))
+    .transform((v) => v || null)
     .test(
-      'invalid_date',
-      'Completed date must be after start date',
-      function (v) {
-        return !v ||
-          new Date(v).getTime() >= new Date(this.parent.start_date).getTime()
-      }
+      "invalid_date",
+      "Completed date must not be before start date",
+      (v, ctx) =>
+        !v ||
+        parseISO(v) >= parseISO(ctx.parent.start_date)
     )
 }).required();
 
@@ -48,7 +59,7 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
       frequency: todo?.frequency,
       end_date: todo?.end_date,
       description: todo?.description,
-      start_date: todo?.start_date,
+      start_date: todo ? todo.start_date : format(new Date(), "yyyy-MM-dd"),
       due_date: todo?.due_date,
       completed_date: todo?.completed_date,
     }
@@ -89,19 +100,21 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
             <Col md={8}>
               <Form.Group>
                 <Form.Label>Title</Form.Label>
-                <Form.Control {...register("title")}
+                <Form.Control
+                  {...register("title")}
                   type="text"
                   id="title"
                   name="title"
                   placeholder="Title"
                   required
-                /><p className="error">{errors.title?.message}</p>
+                />
               </Form.Group>
             </Col>
             <Col md={4}>
               <Form.Group>
                 <Form.Label>List</Form.Label>
-                <Form.Select {...register("list")}
+                <Form.Select
+                  {...register("list")}
                   name="list"
                   defaultValue={todo?.list}
                 >
@@ -119,20 +132,24 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Effort (hrs) - {effort * 60} minutes</Form.Label>
-                <Form.Control {...register("effort")}
+                <Form.Control
+                  {...register("effort")}
                   type="integer"
                   name="effort"
                   onChange={(e) => setEffort(e.target.value)}
-                /><p className="error">{errors.effort?.message}</p>
+                />
+                <p className="error">{errors.effort?.message}</p>
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Reward ($) - recommended ${effort}</Form.Label>
-                <Form.Control {...register("reward")}
+                <Form.Control
+                  {...register("reward")}
                   type="integer"
                   name="reward"
-                /><p className="error">{errors.reward?.message}</p>
+                />
+                <p className="error">{errors.reward?.message}</p>
               </Form.Group>
             </Col>
           </Row>
@@ -141,7 +158,8 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Frequency</Form.Label>
-                <Form.Select {...register("frequency")}
+                <Form.Select
+                  {...register("frequency")}
                   name="frequency"
                 >
                   <option value={""}>One-time</option>
@@ -157,7 +175,8 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
             <Col md={6}>
               <Form.Group>
                 <Form.Label>End Date</Form.Label>
-                <Form.Control {...register("end_date")}
+                <Form.Control
+                  {...register("end_date")}
                   type="date"
                   name="end_date"
                 />
@@ -167,7 +186,8 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
           <Row>
             <Form.Group>
               <Form.Label>Description</Form.Label>
-              <Form.Control {...register("description")}
+              <Form.Control
+                {...register("description")}
                 style={{ height: "150px" }}
                 as="textarea"
                 id="description"
@@ -180,7 +200,8 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
             <Col md={4}>
               <Form.Group>
                 <Form.Label>Start Date</Form.Label>
-                <Form.Control {...register("start_date")}
+                <Form.Control
+                  {...register("start_date")}
                   type="date"
                   id="start_date"
                   name="start_date"
@@ -190,7 +211,8 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
             <Col md={4}>
               <Form.Group>
                 <Form.Label>Due Date</Form.Label>
-                <Form.Control {...register("due_date")}
+                <Form.Control
+                  {...register("due_date")}
                   type="date"
                   id="due_date"
                   name="due_date"
@@ -200,18 +222,22 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
             <Col md={4}>
               <Form.Group>
                 <Form.Label>Completed Date</Form.Label>
-                <Form.Control {...register("completed_date")}
+                <Form.Control
+                  {...register("completed_date")}
                   type="date"
                   id="completed_date"
                   name="completed_date"
-                /><p className="error">{errors.completed_date?.message}</p>
+                /><p className="error">
+                  {errors.completed_date?.message}</p>
               </Form.Group>
             </Col>
           </Row>
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" className="me-auto" onClick={onDelete}>Delete</Button>
+        <Button variant="secondary" className="me-auto" onClick={onDelete}>
+          Delete
+        </Button>
         <Button variant="success" onClick={handleSubmit(onSubmit)}>
           Save
         </Button>

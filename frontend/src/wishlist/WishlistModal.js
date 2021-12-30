@@ -4,12 +4,12 @@ import Select from "react-select";
 import { createType, deleteType, updateType } from "../api/api";
 import { DATA_TYPES } from "../App";
 import { useForm, Controller } from "react-hook-form";
-import { yupResolver } from '@hookform/resolvers/yup';
+import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 const wishlistSchema = yup.object({
   title: yup.string().required(),
-  tags: yup.array(),
+  tags: yup.array().transform((v) => v.map((t) => t.value)),
   cost: yup.number(),
   repeat: yup.boolean(),
   last_purchased_date: yup.string()
@@ -38,9 +38,6 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish, tags }) => {
   const onSubmit = (data) => {
     const id = wish?.id;
 
-    data.tags = data.tags.map(function (tag) {
-      return tag.value;
-    });
 
     const operation = id
       ? updateType({ id, ...data }, DATA_TYPES.WISHLIST) // Existing wish
@@ -72,12 +69,13 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish, tags }) => {
             <Col md={6}>
               <Form.Group>
                 <Form.Label>Title</Form.Label>
-                <Form.Control {...register("title")}
+                <Form.Control
+                  {...register("title")}
                   type="text"
                   name="title"
                   placeholder="Title"
                   required
-                /><p className="error">{errors.title?.message}</p>
+                />
               </Form.Group>
             </Col>
             <Col md={6}>
@@ -94,7 +92,7 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish, tags }) => {
                     options={tags
                       .map((tag) => ({ value: tag.id, label: tag.title }))}
                   />}
-                /><p className="error">{errors.tags?.message}</p>
+                />
               </Form.Group>
             </Col>
           </Row>
@@ -103,18 +101,21 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish, tags }) => {
             <Col md={4}>
               <Form.Group>
                 <Form.Label>Cost ($)</Form.Label>
-                <Form.Control {...register("cost")}
+                <Form.Control
+                  {...register("cost")}
                   type="number"
                   id="cost"
                   name="cost"
-                /><p className="error">{errors.cost?.message}</p>
+                />
+                <p className="error">{errors.cost?.message}</p>
               </Form.Group>
             </Col>
 
             <Col md={4}>
               <Form.Group>
                 <Form.Label>Repeat?</Form.Label>
-                <Form.Select  {...register("repeat")}
+                <Form.Select
+                  {...register("repeat")}
                   name="repeat"
                 >
                   <option value={false}>false</option>
@@ -125,34 +126,41 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish, tags }) => {
             <Col md={4}>
               <Form.Group>
                 <Form.Label>Last Purchased Date</Form.Label>
-                <Form.Control {...register("last_purchased_date")}
+                <Form.Control
+                  {...register("last_purchased_date")}
                   type="date"
                   name="last_purchased_date"
-                /><p className="error">{errors.last_purchased_date?.message}</p>
+                />
               </Form.Group>
             </Col>
           </Row>
 
           <Form.Group>
             <Form.Label>Image URL</Form.Label>
-            <Form.Control  {...register("img_url")}
+            <Form.Control
+              {...register("img_url")}
               type="text"
               name="img_url"
             />
-          </Form.Group><p className="error">{errors.img_url?.message}</p>
+            <p className="error">{errors.img_url?.message}</p>
+          </Form.Group>
 
           <Form.Group>
             <Form.Label>Product URL</Form.Label>
-            <Form.Control {...register("product_url")}
+            <Form.Control
+              {...register("product_url")}
               type="text"
               name="product_url"
-            /><p className="error">{errors.product_url?.message}</p>
+            />
+            <p className="error">{errors.product_url?.message}</p>
           </Form.Group>
 
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" className="me-auto" onClick={onDelete}>Delete</Button>
+        <Button variant="secondary" className="me-auto" onClick={onDelete}>
+          Delete
+        </Button>
         <Button variant="success" onClick={handleSubmit(onSubmit)}>
           Save
         </Button>

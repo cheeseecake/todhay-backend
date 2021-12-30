@@ -1,8 +1,4 @@
-import {
-  formatDuration,
-  intervalToDuration, parseISO
-} from "date-fns";
-import format from "date-fns/format";
+import { formatDuration, intervalToDuration, parseISO, format } from "date-fns";
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import { Badge, Button, Nav, Table, Row, Col, Form } from "react-bootstrap";
@@ -80,9 +76,9 @@ export const Todos = ({
         // not completed AND
         !todo.completed_date && (
           // started OR
-          (todo.start_date && new Date(todo.start_date) <= new Date()) ||
+          (todo.start_date && parseISO(todo.start_date) <= new Date()) ||
           // not started but due
-          (!todo.start_date && todo.due_date && new Date(todo.due_date) <= new Date())
+          (!todo.start_date && todo.due_date && parseISO(todo.due_date) <= new Date())
         )
       ));
   }
@@ -92,18 +88,18 @@ export const Todos = ({
         // not completed AND
         !todo.completed_date &&
         // not started AND
-        (!todo.start_date || new Date(todo.start_date) > new Date()) &&
+        (!todo.start_date || parseISO(todo.start_date) > new Date()) &&
         // not due
-        (!todo.due_date || new Date(todo.due_date) > new Date())
+        (!todo.due_date || parseISO(todo.due_date) > new Date())
       ));
   }
 
   // Sort todos based on descending completed_date, ascending due_date and start_date
   filteredTodos = filteredTodos.sort(
     (a, b) =>
-      new Date(b.completed_date) - new Date(a.completed_date) ||
-      new Date(a.due_date) - new Date(b.due_date) ||
-      new Date(a.start_date) - new Date(b.start_date)
+      parseISO(b.completed_date) - parseISO(a.completed_date) ||
+      parseISO(a.due_date) - parseISO(b.due_date) ||
+      parseISO(a.start_date) - parseISO(b.start_date)
   );
 
   return (
@@ -265,7 +261,7 @@ export const Todos = ({
                 <td>
                   {todo.completed_date
                     ? format(parseISO(todo.completed_date), "d MMM yy")
-                    : (todo.start_date && new Date(todo.start_date) < new Date())
+                    : (todo.start_date && parseISO(todo.start_date) < new Date())
                       ? <Button
                         variant="success"
                         onClick={() => completeTodo(todo)}
