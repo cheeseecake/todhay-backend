@@ -9,8 +9,8 @@ export const formatDays = (dueDate) => {
   return differenceInDays === 1
     ? `tomorrow`
     : differenceInDays === 0
-    ? `today`
-    : differenceInDays === -1
-    ? `yesterday`
-    : formatDistanceToNowStrict(parseISO(dueDate), { addSuffix: true });
+      ? `today`
+      : differenceInDays === -1
+        ? `yesterday`
+        : formatDistanceToNowStrict(parseISO(dueDate), { addSuffix: true, roundingMethod: "ceil" });
 };

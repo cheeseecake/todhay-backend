@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import React, { useState } from "react";
-import { Button, Card, Row, Col, ProgressBar, Badge } from "react-bootstrap";
+import { Button, Card, Row, Col, ProgressBar, Badge, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { updateType } from "../api/api";
 import { DATA_TYPES } from "../App";
 import { formatDays } from "../shared/util";
@@ -87,7 +87,17 @@ export const Wishlist = ({ availableRewards, refreshWishlist, wishlist, tags }) 
                 >
                   Redeem
                 </Button>)
-                : <ProgressBar variant="success" now={100 * (availableRewards / wish.cost)} />
+                :
+                <OverlayTrigger
+                  placement='top'
+                  overlay={
+                    <Tooltip id={wish.id}>
+                      ${(parseFloat(wish.cost) - availableRewards).toFixed(1)} more to go!
+                    </Tooltip>
+                  }
+                >
+                  <ProgressBar variant="success" now={100 * (availableRewards / wish.cost)} />
+                </OverlayTrigger>
               )}
             {" "}${wish.cost}
           </Card.Footer>

@@ -12,6 +12,7 @@ const wishlistSchema = yup.object({
   tags: yup.array().transform((v) => v.map((t) => t.value)),
   cost: yup.number(),
   repeat: yup.boolean(),
+  count: yup.number(),
   last_purchased_date: yup.string()
     .nullable()
     .transform(v => (v === "" ? null : v)),
@@ -29,6 +30,7 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish, tags }) => {
         .map((tag) => ({ value: tag.id, label: tag.title })),
       cost: wish?.cost || 10,
       repeat: wish?.repeat,
+      count: wish?.count || 0,
       last_purchased_date: wish?.last_purchased_date,
       img_url: wish?.img_url,
       product_url: wish?.product_url
@@ -110,8 +112,7 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish, tags }) => {
                 <p className="error">{errors.cost?.message}</p>
               </Form.Group>
             </Col>
-
-            <Col md={4}>
+            <Col md={2}>
               <Form.Group>
                 <Form.Label>Repeat?</Form.Label>
                 <Form.Select
@@ -121,6 +122,17 @@ export const WishlistModal = ({ refreshWishlist, setWish, wish, tags }) => {
                   <option value={false}>false</option>
                   <option value={true}>true</option>
                 </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={2}>
+              <Form.Group>
+                <Form.Label>Count</Form.Label>
+                <Form.Control
+                  {...register("count")}
+                  type="number"
+                  id="count"
+                  name="count"
+                />
               </Form.Group>
             </Col>
             <Col md={4}>

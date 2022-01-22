@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { FaPiggyBank } from "react-icons/fa";
-import { Container, Nav, Navbar } from "react-bootstrap";
+import { Container, Nav, Navbar, Button, Row, Col } from "react-bootstrap";
+import Select from "react-select";
 
 import { getType } from "./api/api";
-import { DateTime } from "./shared/DateTime";
 
 import { Lists } from "./lists/Lists";
 import { Tags } from "./tags/Tags";
@@ -38,12 +37,13 @@ export const App = () => {
   const [activeDataType, setActiveDataType] = useState(
     DATA_TYPES.TODOS.apiName
   );
-  const [selectedListId, setSelectedListId] = useState();
+  const [selectedListId, setSelectedListId] = useState('');
 
   const [tags, setTags] = useState([]);
   const [lists, setLists] = useState([]);
   const [todos, setTodos] = useState([]);
   const [wishlist, setWishlist] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
 
   const refreshTags = useCallback(
     () => void getType(DATA_TYPES.TAGS).then((json) => setTags(json)),
@@ -101,7 +101,7 @@ export const App = () => {
     [DATA_TYPES.TODOS.apiName]: (
       <Todos
         lists={lists}
-        tags={tags}
+        selectedTags={selectedTags}
         refreshTodos={refreshTodos}
         selectedListId={selectedListId}
         setSelectedListId={setSelectedListId}
@@ -114,6 +114,7 @@ export const App = () => {
         lists={lists}
         refreshLists={refreshLists}
         tags={tags}
+        selectedTags={selectedTags}
         todos={todos}
         viewTodosFromListId={viewTodosFromListId}
       />
@@ -137,31 +138,59 @@ export const App = () => {
         variant="dark"
       >
         <Container fluid style={{ padding: "1px 100px 1px" }}>
-          <Nav variant="tabs" className="me-auto">
-            {Object.entries(DATA_TYPES).map(([, { apiName, displayName }]) => (
+          <Navbar.Toggle aria-controls="navbarScroll" />
+          <Navbar.Collapse id="navbarScroll">
+            <Nav variant="tabs" className="me-auto">
               <Nav.Link
-                key={displayName}
-                active={apiName === activeDataType}
+                key="Todos"
+                active={"todos" === activeDataType}
                 style={{ color: "white", backgroundColor: "#2D3047" }}
-                onClick={() => setActiveDataType(apiName)}
+                onClick={() => setActiveDataType("todos")}
               >
-                {displayName}
+                Todos
               </Nav.Link>
-            ))}
-          </Nav>
-          <Navbar.Text
-            style={{ color: "white" }}
-            className="justify-content-end"
-          >
-            <DateTime />{"\n"}
-            <FaPiggyBank />{" "}
-            <span >
-              Available Rewards: ${(totalRewards - claimedRewards).toFixed(2)} / ${totalRewards.toFixed(2)}
-            </span>
-          </Navbar.Text>
+              <Nav.Link
+                key="Lists"
+                active={"lists" === activeDataType}
+                style={{ color: "white", backgroundColor: "#2D3047" }}
+                onClick={() => setActiveDataType("lists")}
+              >
+                Lists
+              </Nav.Link>
+            </Nav>
+            <Navbar.Text
+              style={{ color: "white" }}
+              className="justify-content-end"
+            >
+              <Button variant="outline-light" onClick={() => setActiveDataType("wishlists")}>
+                Redeem rewards (${availableRewards.toFixed(1)})
+              </Button>
+            </Navbar.Text>
+          </Navbar.Collapse>
         </Container>
       </Navbar>
       <Container fluid style={{ padding: "20px 100px 20px" }}>
+        {["todos", "lists"].includes(activeDataType) &&
+          <Row>
+            <Col >
+              <Select
+                name="tags"
+                placeholder="All Tags"
+                isMulti
+                options={tags.map((tag) => ({ value: tag.id, label: tag.title }))}
+                onChange={(e) => { setSelectedTags(e.map((tag) => tag.value)) }}
+              />
+            </Col>
+            <Col md="auto">
+              <Button
+                variant="outline-dark"
+                onClick={() => setActiveDataType("tags")}
+              >
+                View tags
+              </Button>
+            </Col>
+          </Row>}
+
 
         {/* We display the appropriate view based on activeDataType*/}
         {views[activeDataType]}

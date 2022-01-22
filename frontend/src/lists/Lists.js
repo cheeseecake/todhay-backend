@@ -1,7 +1,7 @@
 import { format, parseISO } from "date-fns";
 import React, { useState } from "react";
 import { FcTodoList, FcClock, FcMoneyTransfer } from "react-icons/fc";
-import { Badge, Button, Card, Row, Col, Form } from "react-bootstrap";
+import { Navbar, Nav, Container, Badge, Button, Card, Row, Col } from "react-bootstrap";
 import Select from "react-select";
 import { formatDays } from "../shared/util";
 import { ListsModal } from "./ListsModal";
@@ -9,25 +9,25 @@ import { ListsModal } from "./ListsModal";
 export const Lists = ({
   lists,
   refreshLists,
+  selectedTags,
   tags,
   todos,
   viewTodosFromListId,
 }) => {
   const [editingList, setEditingList] = useState();
-  const [selectedTags, setSelectedTags] = useState([]);
 
-  const [showHabits, setShowHabits] = useState(false);
+  const [filterProjects, setfilterProjects] = useState(true);
 
   // Filter list selection by tag if a tag was selected from autocomplete field,
-  // or if no tag was selected show everything
-  let filteredLists = selectedTags.length > 0
-    ? lists
-      .filter((list) => list.tags.some(tag => selectedTags.includes(tag)))
-    : lists;
+  // or if no tag was selected, filter list based on whether the list is a project (has a due date) or not
+  let filteredLists = filterProjects
+    ? lists.filter((list) => list.due_date)
+    : lists.filter((list) => !list.due_date)
 
-  // Further filter lists depending on whether list has a due date
-  if (showHabits)
-    filteredLists = filteredLists.filter((list) => !list.due_date);
+  selectedTags.length > 0
+    ? filteredLists = filteredLists
+      .filter((list) => list.tags.some(tag => selectedTags.includes(tag)))
+    : filteredLists
 
   // Sort list by due date
   filteredLists = filteredLists.sort(
@@ -109,30 +109,35 @@ export const Lists = ({
 
   return (
     <>
-      <Row>
-        <Col md="auto">
-          <Select
-            name="tags"
-            placeholder="All Tags"
-            isMulti
-            options={tags.map((tag) => ({ value: tag.id, label: tag.title }))}
-            onChange={(e) => setSelectedTags(e.map((tag) => tag.value))}
-          />
-        </Col>
-        <Col md="auto">
-          <Button color="info" onClick={() => setEditingList({})} >
-            Add list
-          </Button>
-        </Col>
-        <Col md="auto">
-          <Form.Check
-            type="checkbox"
-            label="Habits Only"
-            onChange={(e) => { setShowHabits(e.target.checked) }}
-          />
-        </Col>
-      </Row>
-      <br />
+      <Navbar>
+        <Container >
+          <Nav variant="tabs" >
+            <Nav.Item>
+              <Nav.Link
+                className={!filterProjects ? "active" : ""}
+                onClick={() => setfilterProjects(false)}
+              >
+                Lifestyle
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link
+                className={filterProjects ? "active" : ""}
+                onClick={() => setfilterProjects(true)}
+              >
+                Projects
+              </Nav.Link>
+            </Nav.Item>
+          </Nav>
+          <Row className="p-2 me-auto" >
+            <Col>
+              <Button color="info" onClick={() => setEditingList({})} >
+                Add list
+              </Button>
+            </Col>
+          </Row>
+        </Container>
+      </Navbar>
       {editingList && (
         <ListsModal
           list={editingList}

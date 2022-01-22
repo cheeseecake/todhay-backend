@@ -9,5 +9,5 @@ export const DateTime = () => {
     return () => clearInterval(timer);
   }, []);
 
-  return <div>{format(date, "eeee, d MMM yyyy, h:mm aa")}</div>;
+  return <div>{format(date, "eeee, d MMM yyyy")}</div>;
 };

@@ -27,3 +27,8 @@ code {
   color: #9c391b;
   font-style: italic;
 }
+
+.tooltip > .tooltip-inner {
+  max-width: 500px;
+  text-align: left;
+}

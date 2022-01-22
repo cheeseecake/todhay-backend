@@ -1,14 +1,14 @@
 import { formatDuration, intervalToDuration, parseISO, format } from "date-fns";
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
-import { Badge, Button, Nav, Table, Row, Col, Form } from "react-bootstrap";
+import { Navbar, Container, Badge, Button, Nav, Table, Row, Col, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { patchType } from "../api/api";
 import { DATA_TYPES } from "../App";
 import { formatDays } from "../shared/util";
 import { TodosModal } from "./TodosModal";
 
 export const Todos = ({
-  tags,
+  selectedTags,
   lists,
   refreshTodos,
   selectedListId,
@@ -16,11 +16,11 @@ export const Todos = ({
   todos,
 }) => {
   const [editingTodo, setEditingTodo] = useState();
-  const [selectedTags, setSelectedTags] = useState([]);
+
 
   const [filteredStatus, setfilteredStatus] = useState('In Progress');
 
-  const [showHabits, setShowHabits] = useState(false);
+  const [filterProjects, setfilterProjects] = useState(true);
 
   /* Always refetch todos when this view is first mounted */
   useEffect(() => refreshTodos(), [refreshTodos]);
@@ -40,7 +40,7 @@ export const Todos = ({
     ).then(refreshTodos);
 
   // Filter list selection by tag if a tag was selected from autocomplete field,
-  // or if no tag was selected show everything
+  // or if no tag was selected, show everything
   let filteredLists =
     selectedTags.length > 0
       ? lists.filter((list) =>
@@ -48,22 +48,19 @@ export const Todos = ({
       )
       : lists;
 
-  // Filter todos by list if a list was selected from dropdown
+  // Further filter list based on whether the list is a project (has a due date) or not
+  filterProjects
+    ? filteredLists = filteredLists.filter((list) => list.due_date)
+    : filteredLists = filteredLists.filter((list) => !list.due_date)
+
+  // Filter todos based on selected list 
+  // or if no selected list, show all todos in the pre-filtered lists
   let filteredTodos = selectedListId
     ? todos.filter((todo) => todo.list === selectedListId)
-    : todos;
-
-  // Further filter todos depending on tags selected & whether list has a due date
-  if (selectedTags.length > 0)
-    filteredTodos = filteredTodos.filter((todo) =>
-      filteredLists.map((list) => list.id).includes(todo.list)
+    : todos.filter((todo) => filteredLists.map((list) => list.id).includes(todo.list)
     );
 
-  // Further filter todos depending on whether there todo is a habit
-  if (showHabits)
-    filteredTodos = filteredTodos.filter((todo) => todo.frequency);
-
-  // Finally, filter depending whether the user is viewing only completed todos or not
+  // Further filter todos depending based on selected status tab of todos
   if (filteredStatus == "Completed") {
     filteredTodos = filteredTodos.filter(
       // completed
@@ -97,9 +94,9 @@ export const Todos = ({
   // Sort todos based on descending completed_date, ascending due_date and start_date
   filteredTodos = filteredTodos.sort(
     (a, b) =>
-      parseISO(b.completed_date) - parseISO(a.completed_date) ||
-      parseISO(a.due_date) - parseISO(b.due_date) ||
-      parseISO(a.start_date) - parseISO(b.start_date)
+      new Date(b.completed_date) - new Date(a.completed_date) ||
+      new Date(a.due_date) - new Date(b.due_date) ||
+      new Date(a.start_date) - new Date(b.start_date)
   );
 
   return (
@@ -112,77 +109,85 @@ export const Todos = ({
           todo={editingTodo}
         />
       )}
-      <Row>
-        <Col md="auto">
-          <Select
-            name="tags"
-            placeholder="All Tags"
-            isMulti
-            options={tags.map((tag) => ({ value: tag.id, label: tag.title }))}
-            onChange={(e) => { setSelectedTags(e.map((tag) => tag.value)) }}
-          />
-        </Col>
-        <Col md="auto">
-          <Select
-            name="lists"
-            placeholder="All Lists"
-            isClearable
-            options={
-              filteredLists.map((list) => ({
-                value: list.id,
-                label: list.title
-              }))}
-            defaultValue={{
-              value: selectedListId,
-              label: lists.find((list) => list.id === selectedListId)
-                ? lists.find((list) => list.id === selectedListId).title
-                : ''
-            }}
-            onChange={(list) => setSelectedListId(list ? list.value : '')}
-          />
-        </Col>
-        <Col md="auto">
-          <Button
-            color="info"
-            onClick={() => setEditingTodo({ list: selectedListId })}
-          >
-            Add todo
-          </Button>
-        </Col>
-        <Col md="auto">
-          <Form.Check
-            type="checkbox"
-            label="Habits Only"
-            onChange={(e) => { setShowHabits(e.target.checked) }}
-          />
-        </Col>
-      </Row><br />
-      <Nav variant="tabs">
-        <Nav.Item>
-          <Nav.Link
-            className={filteredStatus == "Pending" ? "active" : ""}
-            onClick={() => setfilteredStatus('Pending')}
-          >
-            Pending
-          </Nav.Link>
-        </Nav.Item>
-        <Nav.Item>
-          <Nav.Link
-            className={filteredStatus == "In Progress" ? "active" : ""}
-            onClick={() => setfilteredStatus('In Progress')}
-          >
-            In Progress
-          </Nav.Link>
-        </Nav.Item>
-        <Nav.Item>
-          <Nav.Link
-            className={filteredStatus == "Completed" ? "active" : ""}
-            onClick={() => setfilteredStatus('Completed')}
-          >
-            Completed
-          </Nav.Link>
-        </Nav.Item>
-      </Nav>
+      <Navbar>
+        <Container >
+          <Nav variant="tabs" >
+            <Nav.Item>
+              <Nav.Link
+                className={!filterProjects ? "active" : ""}
+                onClick={() => { setfilterProjects(false); setSelectedListId('') }}
+              >
+                Lifestyle
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link
+                className={filterProjects ? "active" : ""}
+                onClick={() => { setfilterProjects(true); setSelectedListId('') }}
+              >
+                Projects
+              </Nav.Link>
+            </Nav.Item>
+          </Nav>
+          <Row className="p-2 me-auto">
+            <Col style={{ "width": "400px" }}>
+              <Select
+                name="lists"
+                placeholder="All Lists"
+                isClearable
+                options={
+                  filteredLists
+                    .map((list) => ({
+                      value: list.id,
+                      label: list.title
+                    }))
+                }
+                defaultValue={{
+                  value: selectedListId,
+                  label: lists.find((list) => list.id === selectedListId)
+                    ? lists.find((list) => list.id === selectedListId).title
+                    : 'All Lists'
+                }}
+                onChange={(list) => setSelectedListId(list ? list.value : '')}
+              />
+            </Col>
+            <Col>
+              <Button
+                color="info"
+                onClick={() => setEditingTodo({ list: selectedListId })}
+              >
+                Add todo
+              </Button>
+            </Col>
+          </Row>
+          <Nav variant="tabs" className="justify-content-end">
+            <Nav.Item>
+              <Nav.Link
+                className={filteredStatus == "Pending" ? "active" : ""}
+                onClick={() => setfilteredStatus('Pending')}
+              >
+                Pending
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link
+                className={filteredStatus == "In Progress" ? "active" : ""}
+                onClick={() => setfilteredStatus('In Progress')}
+              >
+                In Progress
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link
+                className={filteredStatus == "Completed" ? "active" : ""}
+                onClick={() => setfilteredStatus('Completed')}
+              >
+                Completed
+              </Nav.Link>
+            </Nav.Item>
+          </Nav>
+        </Container>
+      </Navbar >
       <Table bordered hover responsive="md" >
         <thead style={{ backgroundColor: "#2D3047", color: "white" }}>
           <tr>
@@ -225,15 +230,27 @@ export const Todos = ({
             return (
               <tr key={todo.id}>
                 <td onClick={() => setEditingTodo(todo)}>
-                  {todo.title}{" "}<Badge bg="secondary">{todo.frequency}</Badge>
+                  <OverlayTrigger
+                    placement='right-start'
+                    overlay={
+                      <Tooltip
+                        id={todo.id}
+                        className="tooltip"
+                      >
+                        {todo.description.slice(0, 500)}... (click to edit)
+                      </Tooltip>
+                    }
+                  ><span>
+                      {todo.title}{" "}
+                    </span>
+                  </OverlayTrigger>
+                  <Badge bg="secondary">{todo.frequency}</Badge>
                   <br />
                   <span
                     className="subtitle">
                     {lists.find((list) => list.id === todo.list)?.title}{" "}
-
                   </span>
                 </td>
-
                 <td>{formattedEffortHours}</td>
                 <td>${todo.reward}</td>
                 <td>
