@@ -69,6 +69,8 @@ class List(Metadata):
 
 class Todo(Metadata):
     list = models.ForeignKey(List, on_delete=models.CASCADE)
+    effort = models.DecimalField(max_digits=6, decimal_places=2, default=0.5)
+    reward = models.DecimalField(max_digits=6, decimal_places=2, default=0.5)
 
     # If frequency is not None, this means the todo is recurring
     frequency = models.CharField(max_length=20,
@@ -77,13 +79,11 @@ class Todo(Metadata):
                                  default=None,
                                  null=True,
                                  blank=True)
-
     # I'm guessing this is the date after which the task should stop recurring
     # If end_date is None and frequency is set, the task recurs forever
     end_date = models.DateField(blank=True, null=True)
-
-    effort = models.DecimalField(max_digits=6, decimal_places=2, default=0.5)
-    reward = models.DecimalField(max_digits=6, decimal_places=2, default=0.5)
+    current_streak = models.IntegerField(default=0, null=True)
+    max_streak = models.IntegerField(default=0, null=True)
 
     def clean(self):
         # Don't update todo if completed_date is before start_date

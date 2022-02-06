@@ -1,8 +1,7 @@
 import { format, parseISO } from "date-fns";
 import React, { useState } from "react";
 import { FcTodoList, FcClock, FcMoneyTransfer } from "react-icons/fc";
-import { Navbar, Nav, Container, Badge, Button, Card, Row, Col } from "react-bootstrap";
-import Select from "react-select";
+import { Navbar, Nav, Container, Badge, Button, Card, Row, Col, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { formatDays } from "../shared/util";
 import { ListsModal } from "./ListsModal";
 
@@ -49,7 +48,13 @@ export const Lists = ({
       0
     );
 
-    const totalPendingTodos = todos.filter(todo => !todo.completed_date && todo.list === list.id).length
+    const totalPendingTodos = todos.filter(
+      todo => !todo.completed_date && todo.list === list.id).length
+    const totalPendingRewards = todos.filter(
+      todo => !todo.completed_date && todo.list === list.id).reduce(
+        (acc, todo) => acc + parseFloat(todo.reward),
+        0
+      );
 
     return (
 
@@ -92,15 +97,24 @@ export const Lists = ({
             </Card.Text>
           </Card.Body>
           <Card.Footer>
-            <Button
-              variant="outline-dark"
-              onClick={(e) => {
-                e.stopPropagation();
-                viewTodosFromListId(list.id);
-              }}
+            <OverlayTrigger
+              placement='right'
+              overlay={
+                <Tooltip id={list.id}>
+                  ${totalPendingRewards} to be earned.
+                </Tooltip>
+              }
             >
-              View todos ({totalPendingTodos})
-            </Button>
+              <Button
+                variant="outline-dark"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  viewTodosFromListId(list.id);
+                }}
+              >
+                View todos ({totalPendingTodos})
+              </Button>
+            </OverlayTrigger>
           </Card.Footer>
         </Card>
       </Col>

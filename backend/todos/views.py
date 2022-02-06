@@ -1,4 +1,5 @@
 from datetime import date
+from dateutil.relativedelta import relativedelta
 
 from rest_framework import viewsets
 
@@ -48,7 +49,6 @@ class TodoViewSet(viewsets.ModelViewSet):
         if updated_todo.frequency is None:
             print("Not a recurring todo")
             return
-
         # If end_date is set, and today is past the todo's end_date, don't create any more recurring todos
         # if new_todo.end_date and date.today() >= new_todo.end_date:
         #    print("No more todos as end date has past")
@@ -56,23 +56,18 @@ class TodoViewSet(viewsets.ModelViewSet):
 
         # Calculate the new due_date and start_date
         relativedelta_to_add = FREQUENCIES[updated_todo.frequency]
-        new_start_date = updated_todo.start_date + relativedelta_to_add
-        new_due_date = updated_todo.due_date + \
+        # Testing alternative new due_date & start_date calculation method
+        new_start_date = updated_todo.completed_date + relativedelta(days=1)
+        new_due_date = updated_todo.completed_date + \
             relativedelta_to_add if updated_todo.due_date else None
+        # new_start_date = updated_todo.start_date + relativedelta_to_add
+        # new_due_date = updated_todo.due_date + \
+        #     relativedelta_to_add if updated_todo.due_date else None
 
         # If end_date is set, and new_due_date is past the todo's end_date, don't create the recurring todo
         if updated_todo.end_date and new_due_date >= updated_todo.end_date:
             print("No more todos due beyond end_date")
             return
-
-        # Clone the incoming Todo and set due_date, start_date
-        # https://docs.djangoproject.com/en/3.2/topics/db/queries/#copying-model-instances
-        # new_todo._state.adding = True
-        # new_todo.title = old_todo.title
-        # new_todo.description = ""
-        # new_todo.due_date = new_due_date
-        # new_todo.start_date = new_start_date
-        # new_todo.completed_date = None
 
         # If the recurring in progress todo already exists, don't bother creating it
         # We compare the list, frequency, title and completed_date
@@ -83,16 +78,27 @@ class TodoViewSet(viewsets.ModelViewSet):
                                ).exists():
             print("In progress todo already exists")
             return
-        print("Creating next todo")
+
+        new_current_streak = updated_todo.current_streak + \
+            1 if updated_todo.due_date >= updated_todo.completed_date else 0
+        new_max_streak = max(new_current_streak, updated_todo.max_streak)
+
         # All the checks have passed, now we create the todo
+        print("Creating next todo")
+
         next_todo = Todo(
-            list=updated_todo.list,
-            frequency=updated_todo.frequency,
             title=original_todo.title,
+            list=updated_todo.list,
             effort=updated_todo.effort,
             reward=updated_todo.reward,
+            frequency=updated_todo.frequency,
+            end_date=updated_todo.end_date,
+
             start_date=new_start_date,
-            due_date=new_due_date
+            due_date=new_due_date,
+
+            current_streak=new_current_streak,
+            max_streak=new_max_streak
         )
         next_todo.save()
 

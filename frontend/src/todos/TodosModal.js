@@ -9,16 +9,18 @@ import * as yup from "yup";
 
 const todoSchema = yup.object({
   title: yup.string().required(),
+  description: yup.string(),
   list: yup.string(),
-  effort: yup.number().positive(),
-  reward: yup.number().positive(),
+  effort: yup.number(),
+  reward: yup.number(),
   frequency: yup.string()
     .nullable()
     .transform(v => (v === "" ? null : v)),
   end_date: yup.string()
     .nullable()
     .transform(v => (v === "" ? null : v)),
-  description: yup.string(),
+  current_streak: yup.number(),
+  max_streak: yup.number(),
   start_date: yup
     .string()
     .nullable()
@@ -53,12 +55,14 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
     resolver: yupResolver(todoSchema),
     defaultValues: {
       title: todo?.title,
+      description: todo?.description,
       list: todo?.list,
       effort: todo?.effort || 0.5,
       reward: todo?.reward || 0.5,
       frequency: todo?.frequency,
       end_date: todo?.end_date,
-      description: todo?.description,
+      current_streak: todo?.current_streak || 0,
+      max_streak: todo?.max_streak || 0,
       start_date: todo ? todo.start_date : format(new Date(), "yyyy-MM-dd"),
       due_date: todo?.due_date,
       completed_date: todo?.completed_date,
@@ -155,7 +159,7 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
           </Row>
 
           <Row >
-            <Col md={6}>
+            <Col md={3}>
               <Form.Group>
                 <Form.Label>Frequency</Form.Label>
                 <Form.Select
@@ -171,14 +175,33 @@ export const TodosModal = ({ lists, refreshTodos, setTodo, todo }) => {
                 </Form.Select>
               </Form.Group>
             </Col>
-
-            <Col md={6}>
+            <Col md={3}>
               <Form.Group>
                 <Form.Label>End Date</Form.Label>
                 <Form.Control
                   {...register("end_date")}
                   type="date"
                   name="end_date"
+                />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <Form.Group>
+                <Form.Label>Current Streak</Form.Label>
+                <Form.Control
+                  {...register("current_streak")}
+                  type="number"
+                  name="current_streak"
+                />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <Form.Group>
+                <Form.Label>Max Streak</Form.Label>
+                <Form.Control
+                  {...register("max_streak")}
+                  type="number"
+                  name="max_streak"
                 />
               </Form.Group>
             </Col>

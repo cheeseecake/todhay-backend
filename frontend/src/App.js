@@ -163,7 +163,7 @@ export const App = () => {
               className="justify-content-end"
             >
               <Button variant="outline-light" onClick={() => setActiveDataType("wishlists")}>
-                Redeem rewards (${availableRewards.toFixed(1)})
+                Redeem wish (${availableRewards.toFixed(1)})
               </Button>
             </Navbar.Text>
           </Navbar.Collapse>

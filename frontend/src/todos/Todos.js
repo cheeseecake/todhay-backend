@@ -26,7 +26,7 @@ export const Todos = ({
   useEffect(() => refreshTodos(), [refreshTodos]);
 
   const completeTodo = (todo) =>
-    new Date().getTime() >= new Date(todo.start_date).getTime()
+    new Date().getDate() >= new Date(todo.start_date).getDate()
       ? patchType(
         { ...todo, completed_date: format(new Date(), "yyyy-MM-dd") },
         DATA_TYPES.TODOS
@@ -237,19 +237,27 @@ export const Todos = ({
                         id={todo.id}
                         className="tooltip"
                       >
-                        {todo.description.slice(0, 500)}... (click to edit)
+                        {todo.description.slice(0, 500)}...
                       </Tooltip>
                     }
                   ><span>
                       {todo.title}{" "}
                     </span>
                   </OverlayTrigger>
-                  <Badge bg="secondary">{todo.frequency}</Badge>
                   <br />
                   <span
                     className="subtitle">
                     {lists.find((list) => list.id === todo.list)?.title}{" "}
                   </span>
+                  {!todo.completed_date && todo.frequency &&
+                    <Badge bg="light" text="dark">
+                      {todo.frequency}{" "}
+                      <span
+                        className="streak">
+                        Streak: {todo.current_streak}/{todo.max_streak}
+                      </span>
+                    </Badge>
+                  }
                 </td>
                 <td>{formattedEffortHours}</td>
                 <td>${todo.reward}</td>

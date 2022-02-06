@@ -89,10 +89,10 @@ export const Wishlist = ({ availableRewards, refreshWishlist, wishlist, tags }) 
                 </Button>)
                 :
                 <OverlayTrigger
-                  placement='top'
+                  placement='bottom'
                   overlay={
                     <Tooltip id={wish.id}>
-                      ${(parseFloat(wish.cost) - availableRewards).toFixed(1)} more to go!
+                      Earn ${(parseFloat(wish.cost) - availableRewards).toFixed(1)} more to redeem.
                     </Tooltip>
                   }
                 >

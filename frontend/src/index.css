@@ -12,7 +12,11 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
-
+.streak {
+  font-size: 90%; 
+  font-weight: bold;
+  font-style: italic;
+}
 .subtitle {
   font-size: 80%;
   color: #597AB1;
