@@ -1,7 +1,7 @@
 import { format, parseISO } from "date-fns";
 import React, { useState } from "react";
 import { FcTodoList, FcClock, FcMoneyTransfer } from "react-icons/fc";
-import { Navbar, Nav, Container, Badge, Button, Card, Row, Col, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Navbar, Container, Badge, Button, Card, Row, Col, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { formatDays } from "../shared/util";
 import { ListsModal } from "./ListsModal";
 
@@ -15,18 +15,14 @@ export const Lists = ({
 }) => {
   const [editingList, setEditingList] = useState();
 
-  const [filterProjects, setfilterProjects] = useState(true);
-
   // Filter list selection by tag if a tag was selected from autocomplete field,
   // or if no tag was selected, filter list based on whether the list is a project (has a due date) or not
-  let filteredLists = filterProjects
-    ? lists.filter((list) => list.due_date)
-    : lists.filter((list) => !list.due_date)
-
-  selectedTags.length > 0
-    ? filteredLists = filteredLists
-      .filter((list) => list.tags.some(tag => selectedTags.includes(tag)))
-    : filteredLists
+  let filteredLists =
+    selectedTags.length > 0
+      ? lists.filter((list) =>
+        list.tags.some((tag) => selectedTags.includes(tag))
+      )
+      : lists;
 
   // Sort list by due date
   filteredLists = filteredLists.sort(
@@ -125,24 +121,6 @@ export const Lists = ({
     <>
       <Navbar>
         <Container >
-          <Nav variant="tabs" >
-            <Nav.Item>
-              <Nav.Link
-                className={!filterProjects ? "active" : ""}
-                onClick={() => setfilterProjects(false)}
-              >
-                Lifestyle
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link
-                className={filterProjects ? "active" : ""}
-                onClick={() => setfilterProjects(true)}
-              >
-                Projects
-              </Nav.Link>
-            </Nav.Item>
-          </Nav>
           <Row className="p-2 me-auto" >
             <Col>
               <Button color="info" onClick={() => setEditingList({})} >

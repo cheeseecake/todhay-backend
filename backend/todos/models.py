@@ -37,11 +37,7 @@ class Metadata(models.Model):
 
     # I like TextFields cuz then I don't have to worry about limits and space is cheap
     title = models.TextField()
-
     description = models.TextField(blank=True)
-    start_date = models.DateField(blank=True, null=True)
-    due_date = models.DateField(blank=True, null=True)
-    completed_date = models.DateField(blank=True, null=True)
 
     class Meta:
         abstract = True  # Setting this will not create any table in the database
@@ -69,9 +65,11 @@ class List(Metadata):
 
 class Todo(Metadata):
     list = models.ForeignKey(List, on_delete=models.CASCADE)
+    start_date = models.DateField(blank=True, null=True)
+    due_date = models.DateField(blank=True, null=True)
+    completed_date = models.DateField(blank=True, null=True)
     effort = models.DecimalField(max_digits=6, decimal_places=2, default=0.5)
     reward = models.DecimalField(max_digits=6, decimal_places=2, default=0.5)
-
     # If frequency is not None, this means the todo is recurring
     frequency = models.CharField(max_length=20,
                                  choices=(
@@ -79,6 +77,14 @@ class Todo(Metadata):
                                  default=None,
                                  null=True,
                                  blank=True)
+    # type = models.CharField(max_length=20,
+    #                              choices=(
+    #                                  ('todo', 'todo'),
+    #                                  ('project', 'project'),
+    #                                  ('milestone', 'milestone')),
+    #                              default='todo',
+    #                              null=True,
+    #                              blank=True)
     # I'm guessing this is the date after which the task should stop recurring
     # If end_date is None and frequency is set, the task recurs forever
     end_date = models.DateField(blank=True, null=True)

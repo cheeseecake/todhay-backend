@@ -55,14 +55,11 @@ class TodoViewSet(viewsets.ModelViewSet):
         #    return
 
         # Calculate the new due_date and start_date
+        # better to have it based on original start date and due date over completed date
         relativedelta_to_add = FREQUENCIES[updated_todo.frequency]
-        # Testing alternative new due_date & start_date calculation method
-        new_start_date = updated_todo.completed_date + relativedelta(days=1)
-        new_due_date = updated_todo.completed_date + \
+        new_start_date = updated_todo.start_date + relativedelta_to_add
+        new_due_date = updated_todo.due_date + \
             relativedelta_to_add if updated_todo.due_date else None
-        # new_start_date = updated_todo.start_date + relativedelta_to_add
-        # new_due_date = updated_todo.due_date + \
-        #     relativedelta_to_add if updated_todo.due_date else None
 
         # If end_date is set, and new_due_date is past the todo's end_date, don't create the recurring todo
         if updated_todo.end_date and new_due_date >= updated_todo.end_date:

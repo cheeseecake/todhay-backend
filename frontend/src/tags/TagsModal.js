@@ -13,7 +13,7 @@ const tagSchema = yup.object({
 }).required();
 
 export const TagsModal = ({ setTag, tag, refreshTags }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit } = useForm({
     resolver: yupResolver(tagSchema),
     defaultValues: {
       title: tag?.title,

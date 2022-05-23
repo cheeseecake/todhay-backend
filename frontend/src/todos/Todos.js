@@ -17,10 +17,7 @@ export const Todos = ({
 }) => {
   const [editingTodo, setEditingTodo] = useState();
 
-
   const [filteredStatus, setfilteredStatus] = useState('In Progress');
-
-  const [filterProjects, setfilterProjects] = useState(true);
 
   /* Always refetch todos when this view is first mounted */
   useEffect(() => refreshTodos(), [refreshTodos]);
@@ -48,11 +45,6 @@ export const Todos = ({
       )
       : lists;
 
-  // Further filter list based on whether the list is a project (has a due date) or not
-  filterProjects
-    ? filteredLists = filteredLists.filter((list) => list.due_date)
-    : filteredLists = filteredLists.filter((list) => !list.due_date)
-
   // Filter todos based on selected list 
   // or if no selected list, show all todos in the pre-filtered lists
   let filteredTodos = selectedListId
@@ -79,16 +71,23 @@ export const Todos = ({
         )
       ));
   }
-  else {
+  else if (filteredStatus == "Pending") {
     filteredTodos = filteredTodos.filter(
       (todo) => (
         // not completed AND
         !todo.completed_date &&
         // not started AND
-        (!todo.start_date || parseISO(todo.start_date) > new Date()) &&
+        (todo.due_date && (!todo.start_date || parseISO(todo.start_date)) > new Date()) &&
         // not due
-        (!todo.due_date || parseISO(todo.due_date) > new Date())
+        (todo.start_date && (!todo.due_date || parseISO(todo.due_date) > new Date()))
       ));
+  }
+  // To plan i.e. no start date or due date
+  else if (filteredStatus == "Backlog") {
+    filteredTodos = filteredTodos.filter(
+      // completed
+      (todo) => (!todo.completed_date && !todo.start_date && !todo.due_date)
+    );
   }
 
   // Sort todos based on descending completed_date, ascending due_date and start_date
@@ -111,24 +110,6 @@ export const Todos = ({
       )}
       <Navbar>
         <Container >
-          <Nav variant="tabs" >
-            <Nav.Item>
-              <Nav.Link
-                className={!filterProjects ? "active" : ""}
-                onClick={() => { setfilterProjects(false); setSelectedListId('') }}
-              >
-                Lifestyle
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link
-                className={filterProjects ? "active" : ""}
-                onClick={() => { setfilterProjects(true); setSelectedListId('') }}
-              >
-                Projects
-              </Nav.Link>
-            </Nav.Item>
-          </Nav>
           <Row className="p-2 me-auto">
             <Col style={{ "width": "400px" }}>
               <Select
@@ -161,6 +142,14 @@ export const Todos = ({
             </Col>
           </Row>
           <Nav variant="tabs" className="justify-content-end">
+            <Nav.Item>
+              <Nav.Link
+                className={filteredStatus == "Backlog" ? "active" : ""}
+                onClick={() => setfilteredStatus('Backlog')}
+              >
+                Backlog
+              </Nav.Link>
+            </Nav.Item>
             <Nav.Item>
               <Nav.Link
                 className={filteredStatus == "Pending" ? "active" : ""}

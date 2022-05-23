@@ -4,6 +4,7 @@ __pycache__
 
 .DS_Store
 .venv
+/backend/venv/
 
 # npm
 /frontend/node_modules/
